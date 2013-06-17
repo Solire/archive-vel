@@ -114,23 +114,17 @@ class Shop extends \Vel\Front\Controller\Main
 
         $panier = $this->loadPanier();
 
-        echo '<pre>' . print_r($panier, true) . '</pre>';
-
-        $query = 'SELECT id '
-               . 'FROM ' . $panier->config->get('table', 'reference') . ' p '
-               . 'WHERE p.id_gab_page = ' . $produit;
-        $refId = $this->_db->query($query)->fetch(\PDO::FETCH_COLUMN);
-
-
-        $panier->ajoute($refId, $qte);
+        $panier->ajoute($produit, $qte);
 
         $message = new \Slrfw\Message('Produit ajouté au panier');
         $message->total = \Slrfw\Format\Number::formatMoney($panier->getPrix());
-        $message->produitQte = $panier->getNombre($refId);
-        $message->produitPrix = \Slrfw\Format\Number::formatMoney($panier->getPrix($refId));
+        $message->produitQte = $panier->getNombre($produit);
+        $message->produitPrix = \Slrfw\Format\Number::formatMoney($panier->getPrix($produit));
         $message->port = \Slrfw\Format\Number::formatMoney($panier->getPort());
         $message->nbProduits = $panier->getNombre();
         $message->display();
+
+        echo '<pre>' . print_r($message, true) . '</pre>';
     }
 
     /**

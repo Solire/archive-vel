@@ -74,9 +74,9 @@ class Panier
         $this->config = new \Slrfw\Config($path);
 
         $this->db = \Slrfw\Registry::get('db');
-        $cookieName = $this->config->get('cookieName', 'session');
+        $cookieName = $this->config->get('session', 'cookieName');
         if (isset($_COOKIE[$cookieName])) {
-            $query = 'SELECT id FROM ' . $this->config->get('panier', 'table')
+            $query = 'SELECT id FROM ' . $this->config->get('table', 'panier')
                    . ' WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
             $panier = $this->db->query($query)->fetch();
             if (empty($panier)) {
@@ -188,7 +188,7 @@ class Panier
               ------------------------------- */
             $query = 'SELECT ' . implode(', ', $info) . ' '
                    . 'FROM ' . $this->config->get('table', 'reference') . ' '
-                   . 'WHERE id = ' . $idRef;
+                   . 'WHERE id_gab_page = ' . $idRef;
             try {
                 $ref = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
             } catch (\PDOException $exc) {
@@ -252,7 +252,7 @@ class Panier
           `------------------------------------------------- */
         $query = 'SELECT COUNT(*) FROM ' . $tableLigne . ' '
                . 'WHERE id_panier = ' . $this->id;
-        $count = $this->db->query($query)->fetch(PDO::FETCH_COLUMN);
+        $count = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
 
         if (!$count) {
             $tablePanier = $this->config->get('table', 'panier');
@@ -332,9 +332,9 @@ class Panier
      */
     public function getPrix($idRef = null)
     {
-        $methode = $this->config->get('prixTTC', 'methode');
+        $methode = $this->config->get('methode', 'prixTTC');
 
-        $query = 'SELECT SUM((' . $methode . ') * (1 - taux_remise) * quantite) '
+        $query = 'SELECT SUM((' . $methode . ') * quantite) '
                . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $this->id;
 
