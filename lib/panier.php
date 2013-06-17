@@ -80,25 +80,35 @@ class Panier
                    . ' WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
             $panier = $this->db->query($query)->fetch();
             if (empty($panier)) {
-                setcookie($cookieName, '', time() - 3600);
+                $this->create();
                 return null;
             }
             $this->id = $panier['id'];
-
         } else {
-            $cle = $this->genereCle();
-            $cookieName = $this->config->get('session', 'cookieName');
-            $expire = time() +
-                (int) $this->config->get('session', 'cookieDuration');
-
-            setcookie($cookieName, $cle, $expire, '/');
-
-            $query = 'INSERT INTO ' . $this->config->get('table', 'panier')
-                   . ' (cle) VALUES ( ' . $this->db->quote($cle) . ' );';
-            $this->db->exec($query);
-            $this->id = $this->db->lastInsertId();
+            $this->create();
         }
     }
+
+    /**
+     * Création d'un nouveau panier
+     *
+     * @return void
+     */
+    protected function create()
+    {
+        $cle = $this->genereCle();
+        $cookieName = $this->config->get('session', 'cookieName');
+        $expire = time() +
+            (int) $this->config->get('session', 'cookieDuration');
+
+        setcookie($cookieName, $cle, $expire, '/');
+
+        $query = 'INSERT INTO ' . $this->config->get('table', 'panier')
+               . ' (cle) VALUES ( ' . $this->db->quote($cle) . ' );';
+        $this->db->exec($query);
+        $this->id = $this->db->lastInsertId();
+    }
+
     /**
      * Modifie la date de dernier edition du panier
      *
@@ -315,7 +325,7 @@ class Panier
     public function getHT()
     {
         $methode = $this->config->get('methode', 'prixHT');
-        $query = 'SELECT SUM((' . $methode . ') * (1 - taux_remise) * quantite) '
+        $query = 'SELECT SUM((' . $methode . ') * quantite) '
                . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $this->id;
         $prix = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);

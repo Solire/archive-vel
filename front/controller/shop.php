@@ -173,9 +173,8 @@ class Shop extends \Vel\Front\Controller\Main
 
         /** Si le panier est vide on envois une autre page **/
         if ($panier->getNombre() == 0) {
-            $front = \Slrfw\FrontController::getInstance();
-            $front->action = 'paniervide';
-            return true;
+            $this->pageNotFound();
+            return;
         }
 
         $client = $this->chargeCompte(false);
