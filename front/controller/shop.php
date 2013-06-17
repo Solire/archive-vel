@@ -123,8 +123,6 @@ class Shop extends \Vel\Front\Controller\Main
         $message->port = \Slrfw\Format\Number::formatMoney($panier->getPort());
         $message->nbProduits = $panier->getNombre();
         $message->display();
-
-        echo '<pre>' . print_r($message, true) . '</pre>';
     }
 
     /**
@@ -186,6 +184,12 @@ class Shop extends \Vel\Front\Controller\Main
         }
 
         $this->_view->panier = $panier->getInfo();
+
+        /** Plugin de mise en page **/
+        $panierPath = \Slrfw\FrontController::search('controller/shop/panier.php');
+        if (!empty($panierPath)) {
+            include $panierPath;
+        }
     }
 
     /**
