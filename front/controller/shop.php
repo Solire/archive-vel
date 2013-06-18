@@ -177,11 +177,15 @@ class Shop extends \Vel\Front\Controller\Main
 
         $client = $this->chargeCompte(false);
         if ($client !== false) {
-            $this->_view->actionPanier = 'panier-adresse';
+            $name = 'panier-adresse';
             $this->_view->client = $client->getInfo();
         } else {
-            $this->_view->actionPanier = 'panier-login';
+            $name = 'panier-login';
         }
+
+        $this->_view->actionPanier = \Slrfw\FrontController::search(
+            'view/shop/' . $name . '.php'
+        );
 
         $this->_view->panier = $panier->getInfo();
 
