@@ -19,7 +19,7 @@ namespace Vel\Front\Controller;
  * @author     Adrien <aimbert@solire.fr>
  * @license    Solire http://www.solire.fr/
  */
-abstract class Commande
+class Commande
 {
     /**
      * Lien vers le fichier de configuration des commandes
