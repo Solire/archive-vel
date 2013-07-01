@@ -187,13 +187,20 @@ class Shop extends \Vel\Front\Controller\Main
             'view/shop/' . $name . '.php'
         );
 
-        $this->_view->panier = $panier->getInfo();
+        /** Utilisation d'un hook **/
+        $hook = new \Slrfw\Hook();
+        $hook->setSubdirName('panier');
 
-        /** Plugin de mise en page **/
-        $panierPath = \Slrfw\FrontController::search('controller/shop/panier.php');
-        if (!empty($panierPath)) {
-            include $panierPath;
-        }
+        /** Passage des variables utilisables **/
+        $hook->panier = $panier->getInfo();
+        $hook->gabaritManager = $this->_gabaritManager;
+
+        /** Execution du hook **/
+        $hook->exec('affichage');
+
+        /** Récupération des variables **/
+        $this->_view->panier = $hook->panier;
+        unset($hook);
     }
 
     /**
@@ -206,56 +213,15 @@ class Shop extends \Vel\Front\Controller\Main
     {
         $this->_view->enable(false);
 
-        $client = $this->chargeCompte();
-        $infoClient = $client->getInfo();
+        /** Utilisation d'un hook **/
+        $hook = new \Slrfw\Hook();
+        $hook->setSubdirName('commande');
 
         /** Chargement des données **/
         $form = $this->chargeForm('passercommande.form.ini');
-        list($livraison, $modeLib) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+        list($livraison, $mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+        $hook->form = $form->getArray();
         unset($form);
-
-
-        /* = Recherche du mode de payement
-          ------------------------------- */
-        $modes = array(
-            'CB' => array('cb'),
-            'Cheque' => array('chèque'),
-        );
-        $modeLib = strtolower($modeLib);
-        $mode = null;
-        foreach ($modes as $code => $tests) {
-            foreach ($tests as $test) {
-                if (stripos($modeLib, $test) !== false) {
-                    $mode = $code;
-                    break;
-                }
-            }
-            if (!empty($mode)) {
-                break;
-            }
-        }
-        if (empty($mode)) {
-            throw new \Slrfw\Exception\Marvin(
-                new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante'),
-                'Erreur enregistrement commande'
-            );
-        }
-        unset($modeLib, $modes, $tests, $code);
-
-
-        /* = Contrôle de l'adresse de livraison
-          ------------------------------- */
-        $livAdresse = null;
-        foreach ($infoClient['adresses'] as $adresse) {
-            if ($adresse['id'] == $livraison) {
-                $livAdresse = $adresse;
-                break;
-            }
-        }
-
-        if (empty($livAdresse)) {
-            throw new \Slrfw\Exception\User('Veuillez Choisir une adresse de livraison');
-        }
 
         /* = Enregistrement de la commande
           ------------------------------- */
@@ -263,177 +229,30 @@ class Shop extends \Vel\Front\Controller\Main
         if ($panier->getNombre() == 0) {
             throw new \Slrfw\Exception\User('Aucun Panier en cours');
         }
+
+        $hook->exec('control');
+
         $className = \Slrfw\FrontController::searchClass('Lib\Commande', false);
         $commande = new $className();
+
+        $modes = $commande->config('modePayement', 'enable');
+        if (empty($modes)) {
+                throw new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante');
+        }
+        $modes = explode(',', $modes);
+        $modes = array_map('trim', $modes);
+
+        if (!in_array($mode, $modes)) {
+            throw new \Slrfw\Exception\Lib('Mode de payement non disponible');
+        }
+
         $commande->panierToCommande($mode, $panier);
 
-        /* = Enregistrement des adresses
-          ------------------------------- */
-        $query = 'UPDATE boutique_commande SET '
-               . ' id_adresse_livraison = ' . $livAdresse['id'] . ', '
-               . ' id_adresse_facturation = ' . $infoClient['adressePrincipale']['id'] . ', '
-               . ' id_client = ' . $infoClient['id'] . ' '
-               . 'WHERE id = ' . $commande->getId();
-        try {
-            $this->_db->exec($query);
-        } catch (\PDOException $exc) {
-            throw new \Slrfw\Exception\Marvin($exc, "Erreur enregistrement commande");
-        }
-
-        /* = Finalisation de la commande
-          ------------------------------- */
-        $method = 'passerCmde' . $mode;
-        if (!method_exists('shopController', $method)) {
-            throw new \Slrfw\Exception\Marvin(
-                new \Slrfw\Exception\Lib("Methode de payement $mode non gérée"),
-                "Erreur enregistrement commande"
-            );
-        }
-
-        /* = Application des stocks
-          ------------------------------- */
-        $commande->decrementeStocks();
-
-        $this->$method($commande, $client);
+        /** Execution du hook **/
+        $hook->commande = $commande;
+        $hook->exec('traitement');
+        $hook->exec($mode);
     }
-
-    /**
-     *
-     * @param \Vel\lib\Commande $commande Commande en cours
-     * @param \Vel\lib\Client   $client   Informations client
-     *
-     * @return void
-     */
-    protected function passerCmdeCB(\Vel\lib\Commande $commande, \Vel\lib\Client $client)
-    {
-        $config = new Config('config/shop/banque.ini');
-
-        $date = gmdate("YmdHis", time());
-
-        $sign = $config->get('version', 'config') . "+"
-              . $config->get('site_id', 'client') . "+"
-              . $config->get('mode', 'config') . "+"
-              . $trans_id . "+"
-              . $date . "+"
-              . '' . "+"
-              . '' . "+"
-              . 'SINGLE' . "+"
-              . '' . "+"
-              . $amount . "+"
-              . $config->get('currency', 'config') . "+"
-              . $config->get('key', 'client');
-        $signature = sha1($sign);
-
-        $form = '<html>'
-              . '<head></head>'
-              . '<body onLoad="document.forms[0].submit()">'
-              . '<form name="paiment" method="POST" action="https://systempay.cyberpluspaiement.com/vads-payment/">'
-              . '<input type="hidden" name="ctx_mode" value="' . $config->get('mode', 'config') . '" />'
-              . '<input type="hidden" name="amount" value="' . $amount . '" />'
-              . '<input type="hidden" name="capture_delay" value="" />'
-              . '<input type="hidden" name="currency" value="' . $config->get('currency', 'config') . '" />'
-              . '<input type="hidden" name="payment_cards" value="" />'
-              . '<input type="hidden" name="payment_config" value="SINGLE" />'
-              . '<input type="hidden" name="site_id" value="' . $config->get('site_id', 'client') . '" />'
-              . '<input type="hidden" name="trans_date" value="' . $date . '" />'
-              . '<input type="hidden" name="trans_id" value="' . $trans_id . '" />'
-              . '<input type="hidden" name="validation_mode" value="" />'
-              . '<input type="hidden" name="version" value="V1" />'
-              . '<input type="hidden" name="url_success" value="http://www.facilenfil.com/payement-accepte.html" />'
-              . '<input type="hidden" name="url_refused" value="http://www.facilenfil.com/payement-refuse.html" />'
-              . '<input type="hidden" name="url_referral" value="http://www.facilenfil.com/payement-refuse.html" />'
-              . '<input type="hidden" name="url_cancel" value="http://www.facilenfil.com/payement-refuse.html" />'
-              .'<input type="hidden" name="signature" value="' . $signature . '" />'
-              . '</form></body></html>';
-
-        echo $form;
-    }
-
-    /**
-     * Retour banque
-     *
-     */
-    public function retourBanqueAction()
-    {
-
-        $log = new Log('../log/payment.log');
-
-        $log->logThis($_POST);
-
-        $inscription = new formulaire('banque.form.ini');
-        try {
-            $bank = $inscription->run();
-        } catch (Exception $exc) {
-            $this->pageNotFound();
-            die();
-        }
-
-        $log->logThis($bank);
-
-
-        $config = new Config("config/shop/banque.ini");
-        $chaine = $bank['version'] . "+"
-                . $bank['site_id'] . "+"
-                . $bank['ctx_mode'] . "+"
-                . $bank['trans_id'] . "+"
-                . $bank['trans_date'] . "+"
-                . $bank['validation_mode'] . "+"
-                . $bank['capture_delay'] . "+"
-                . $bank['payment_config'] . "+"
-                . $bank['card_brand'] . "+"
-                . $bank['card_number'] . "+"
-                . $bank['amount'] . "+"
-                . $bank['currency'] ."+"
-                . $bank['auth_mode'] ."+"
-                . $bank['auth_result'] . "+"
-                . $bank['auth_number'] ."+"
-                . $bank['warranty_result'] . "+"
-                . $bank['payment_certificate'] ."+"
-                . $bank['result'] ."+"
-                . $bank['hash'] . "+"
-                . $config->get('key', 'client');
-        $signature = sha1($chaine);
-        if ($bank['signature'] != $signature) {
-            $this->pageNotFound();
-        }
-
-        if ($bank['result'] == "00") {
-            $className = \Slrfw\FrontController::searchClass('Lib\Commande', false);
-            $commande = new $className();
-            $commande->set($bank['trans_id']);
-
-            $commande->changePourPaye('CB');
-
-            $mail = new Mail('payement');
-            $mail->cmde = $commande->getAll();
-            $mail->send();
-        }
-
-
-    }
-
-
-    /**
-     * Finalise la validation d'une commande en mode Chèque
-     */
-    protected function passerCmdeCheque(\Vel\lib\Commande $commande, \Vel\lib\Client $client)
-    {
-        $commande->changeEtat('attentPayement', 'Cheque');
-
-        /* = Vidage du panier
-          ------------------------------- */
-        $panier = Panier::run();
-        $panier->vide();
-
-        $mail = new Mail('cheque');
-        $mail->cmde = $commande->getAll();
-        $mail->send();
-
-        $message = new Message("Enregistrement de la commande");
-        $message->addRedirect("compte/start.html", 3);
-        $message->display();
-    }
-
 
     public function paiementAccepteAction()
     {
