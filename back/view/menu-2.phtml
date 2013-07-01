@@ -18,16 +18,16 @@
                                     <li class="dropdown<?php echo $this->controller == "back/page" ? ' gradient-blue text-light-white' : ''; ?>">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Catalogue <b class="caret"></b></a>
                                         <ul class="dropdown-menu">
-                                            <li class="<?php ?>"><a href="back/page/liste.html?"> Rubriques</a></li>
-                                            <li class="<?php ?>"><a href="back/page/liste.html?"> Produits</a></li>
-                                            <li class="<?php ?>"><a href="back/page/liste.html?"> Critères</a></li>
+                                            <li class="<?php ?>"><a href="back/page/liste.html?c=100"> Rubriques</a></li>
+                                            <li class="<?php ?>"><a href="back/page/liste.html?c=101"> Produits</a></li>
+                                            <li class="<?php ?>"><a href="back/page/liste.html?c=102"> Critères</a></li>
                                         </ul>
                                     </li>
                                     <li class="divider-vertical divider-simple hidden-phone hidden-tablet"></li>
-                                    <li class="dropdown<?php echo $this->controller == "back/page" ? ' gradient-blue text-light-white' : ''; ?>">
+                                    <li class="dropdown<?php echo $this->controller == "back/commande" ? ' gradient-blue text-light-white' : ''; ?>">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Commande <b class="caret"></b></a>
                                         <ul class="dropdown-menu">
-                                            <li class="<?php ?>"><a href="back/page/liste.html?"> En cours (2)</a></li>
+                                            <li class="<?php ?>"><a href="back/commande/encours.html?"> En cours (2)</a></li>
                                             <li class="<?php ?>"><a href="back/page/liste.html?"> Traités</a></li>
                                             <li class="<?php ?>"><a href="back/page/liste.html?"> Stats</a></li>
                                         </ul>
@@ -36,7 +36,7 @@
                                     <li class="divider-vertical divider-simple hidden-phone hidden-tablet"></li>
                                     <li<?php echo $this->controller == "back/media" ? ' class="gradient-blue text-light-white"' : ''; ?>><a href="back/media/start.html">Clients</a></li>
                                     <li class="divider-vertical divider-simple hidden-phone hidden-tablet"></li>
-                                    <li class="dropdown<?php echo $this->controller == "back/page" ? ' gradient-blue text-light-white' : ''; ?>">
+                                    <li class="dropdown<?php echo $this->controller == "back/parametre" ? ' gradient-blue text-light-white' : ''; ?>">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Paramètres <b class="caret"></b></a>
                                         <ul class="dropdown-menu">
                                             <li class="<?php ?>"><a href="back/page/liste.html?"> TVA</a></li>
@@ -46,6 +46,6 @@
                                     <li class="divider-vertical divider-simple hidden-phone hidden-tablet"></li>
 <?php
 
-$this->add('menuadd.phtml');
+$this->add('menuadd-2.phtml');
 
 ?>
