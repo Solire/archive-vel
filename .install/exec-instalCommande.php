@@ -66,3 +66,4 @@ $query = 'CREATE TABLE IF NOT EXISTS `boutique_ligne` (
 ';
 
 $db->exec($query);
+

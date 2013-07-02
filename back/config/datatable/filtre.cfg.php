@@ -1,8 +1,15 @@
 <?php
-/** datatable filtre */
+/**
+ * Configuration du datatable de filtre
+ *
+ * @package    Vel
+ * @subpackage Datatable
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    Solire http://www.solire.fr/
+ */
 
 $config = array(
-    'plugins'   =>  array(
+    'plugins' => array(
         'ShinForm',
     ),
     'table' => array(
@@ -11,28 +18,28 @@ $config = array(
         'suffix_genre' => '',
         'fixedheader' => false,
         'name' => 'filtre',
-        'detail'    =>  true,
+        'detail' => true,
     ),
-    'where'     => array('libre = 0'),
-    'file'  =>  array(
-        'upload_path'       => 'public_html/medias/cli/Filtre',
-        'upload_temp'       => 'temp',
-        'upload_vignette'   => 'mini',
-        'upload_apercu'     => 'apercu',
+    'where' => array('libre = 0'),
+    'file' => array(
+        'upload_path' => 'public_html/medias/cli/Filtre',
+        'upload_temp' => 'temp',
+        'upload_vignette' => 'mini',
+        'upload_apercu' => 'apercu',
     ),
     'extra' => array(
-        'copy'              => false,
-        'print'             => false,
-        'pdf'               => false,
-        'csv'               => false,
-        'hide_columns'      => false,
+        'copy' => false,
+        'print' => false,
+        'pdf' => false,
+        'csv' => false,
+        'hide_columns' => false,
         'highlightedSearch' => false,
-        'creable'           =>  true,
-        'editable'          =>  true,
-        'deletable'         =>  true,
-        'logical delete'    =>  array(
-            'column_bool'       =>  'suppr',
-            'column_date'       =>  'date_modif',
+        'creable' => true,
+        'editable' => true,
+        'deletable' => true,
+        'logical delete' => array(
+            'column_bool' => 'suppr',
+            'column_date' => 'date_modif',
         ),
     ),
     'style' => array(
@@ -42,7 +49,7 @@ $config = array(
         array(
             'name' => 'id',
             'show' => false,
-            'index' =>  true,
+            'index' => true,
             'filter_field' => 'text',
             'title' => 'Id',
         ),
@@ -51,8 +58,8 @@ $config = array(
             'show' => true,
             'filter_field' => 'text',
             'title' => 'Nom',
-            'creable_field' =>  array(
-                'type'  =>  'text',
+            'creable_field' => array(
+                'type' => 'text',
                 'validate' => array(
                     'rules' => array(
                         'required' => true,
@@ -64,7 +71,9 @@ $config = array(
             ),
         ),
         array(
-            'content' => '<div rel="back/dashboard/start.html?name=filtre_option&nomain=1&nojs=1" data-filter="filter[]=id_filtre|[INDEX]" class="ajax-load"></div>',
+            'content' => '<div rel="back/dashboard/start.html?'
+                . 'name=filtre_option&nomain=1&nojs=1" data-filter='
+                . '"filter[]=id_filtre|[INDEX]" class="ajax-load"></div>',
             'show_detail' => true,
             'title' => 'Options du filtre',
         ),
@@ -77,3 +86,4 @@ $config = array(
         ),
     ),
 );
+

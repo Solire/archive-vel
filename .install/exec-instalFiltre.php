@@ -47,3 +47,4 @@ CREATE TABLE IF NOT EXISTS `filtre_option` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 
 $db->exec($query);
+

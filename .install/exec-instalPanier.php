@@ -42,3 +42,4 @@ $query = 'CREATE TABLE IF NOT EXISTS `boutique_panier_ligne` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 
 $db->exec($query);
+

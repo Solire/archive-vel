@@ -1,6 +1,12 @@
 <?php
-
-/** datatable filtre_option */
+/**
+ * Configuration du datatable de filtre
+ *
+ * @package    Vel
+ * @subpackage Datatable
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    Solire http://www.solire.fr/
+ */
 
 $config = array(
     'table' => array(
@@ -10,7 +16,7 @@ $config = array(
         'fixedheader' => false,
         'name' => 'filtre_option',
     ),
-    'file'  =>  array(
+    'file' => array(
         'upload_path' => 'public_html/medias/cli/Filtre',
         'upload_temp' => 'temp',
         'upload_vignette' => 'mini',
@@ -23,25 +29,25 @@ $config = array(
         'csv' => false,
         'hide_columns' => false,
         'highlightedSearch' => false,
-        'creable'   =>  true,
-        'editable'   =>  true,
-        'deletable'   =>  true,
-        'logical delete'    =>  array(
-            'column_bool'    =>  'suppr',
-            'column_date'   =>  'date_modif',
+        'creable' => true,
+        'editable' => true,
+        'deletable' => true,
+        'logical delete' => array(
+            'column_bool' => 'suppr',
+            'column_date' => 'date_modif',
         ),
     ),
     'style' => array(
-        "datatable" => array(
-            "background" => "#FA287C",
-            "border-color" => "#FA287C",
+        'datatable' => array(
+            'background' => '#FA287C',
+            'border-color' => '#FA287C',
         ),
         'form' => 'bootstrap',
     ),
     'columns' => array(
         array(
             'name' => 'id',
-            'index' =>  true,
+            'index' => true,
             'show' => false,
             'filter_field' => 'text',
             'title' => 'Id',
@@ -51,8 +57,8 @@ $config = array(
             'show' => true,
             'filter_field' => 'text',
             'title' => 'Nom',
-            'creable_field' =>  array(
-                'type'  =>  'text',
+            'creable_field' => array(
+                'type' => 'text',
             ),
         ),
         array(
