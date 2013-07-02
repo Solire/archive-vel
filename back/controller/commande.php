@@ -44,13 +44,24 @@ class Commande extends \App\Back\Controller\Main
         unset($commandeClass);
 
 
-        $list = $commande->listeEnCours();
-        echo '<pre>' . print_r($list, true) . '</pre>';
-
-
-
-        echo 'ok';
-        die;
+        $this->_view->list = $commande->listeEnCours();
     }
+
+    /**
+     * Affiche les commandes expédiés
+     *
+     * @return void
+     */
+    public function traiteAction()
+    {
+
+        $commandeClass = \Slrfw\FrontController::searchClass('Lib\Commande');
+        $commande = new $commandeClass;
+        unset($commandeClass);
+
+        $this->_view->list = $commande->listeExp();
+    }
+
+
 }
 

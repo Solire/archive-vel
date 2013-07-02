@@ -9,7 +9,7 @@
  * @filesource
  */
 
-namespace Vel\Front\Controller;
+namespace Vel\Lib;
 
 /**
  * Module des comptes utilisateur
@@ -51,7 +51,7 @@ class Commande
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $this->config = new \Slrfw\Config($path);
 
-        $this->db = Registry::get('db');
+        $this->db = \Slrfw\Registry::get('db');
     }
 
     /**
@@ -68,18 +68,56 @@ class Commande
     }
 
     /**
+     * Listes les commandes payées / non livrées
+     *
+     * @return array
+     */
+    public function listeEnCours()
+    {
+        $where = array();
+        $where[] = $this->sqlEtat('paye') . ' OR ' . $this->sqlEtat('attentPayement');
+        $select = array('*');
+        $liste = $this->liste($select, $where);
+        foreach ($liste as &$commande) {
+            $etat = $this->infoEtat($commande['etat']);
+            $commande['couleur'] = $etat->couleur;
+            if ($commande['etat'] >= 400 && $commande['etat'] <= 499) {
+                $commande['paye'] = 'oui';
+            } else {
+                $commande['paye'] = 'non';
+            }
+        }
+        return $liste;
+    }
+
+    /**
+     * Listes les commandes expediée
+     *
+     * @return array
+     */
+    public function listeExp()
+    {
+        $where = array();
+        $where[] = $this->sqlEtat('expedie');
+        $select = array('c.*');
+        return $this->liste($select, $where);
+    }
+
+    /**
      * Liste les commandes
      * @param array $select
      * @param array $where
      * @return array
      */
-    protected function _liste(array $select = null, array $where = null)
+    protected function liste(array $select = null, array $where = null)
     {
-        if (empty($select))
+        if (empty($select)) {
             $select = array('*');
+        }
 
-        if (empty($where))
+        if (empty($where)) {
             $where = array();
+        }
 
 
         /* = Gestion des jointures de tables
@@ -99,11 +137,11 @@ class Commande
                . 'FROM ' . $this->config('table', 'commande') . ' c '
                . ' ' . implode(' ', $join) . ' '
                . 'WHERE ' . implode(' AND ', $where);
-        $commandes = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+        $commandes = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
         /* = Présentation des Champs
           ------------------------------- */
-        $format = new ShopFormat($this->config('presentation'));
+        $format = new \Vel\Lib\Format($this->config('presentation'));
         for ($i = 0; $i < count($commandes); $i++) {
             $commandes[$i] = $format->formatAll($commandes[$i]);
         }
@@ -142,7 +180,7 @@ class Commande
      * @return string
      * @throws ShopException
      */
-    protected function _sqlEtat($code)
+    protected function sqlEtat($code)
     {
         $name = 'mask' . ucfirst($code);
         $mask = $this->config('etat', $name);
@@ -165,7 +203,7 @@ class Commande
      * @return object
      * @throws ShopException
      */
-    protected function _infoEtat($etat)
+    protected function infoEtat($etat)
     {
         $etats = $this->config('etat');
         $idEtat = $etat[0] . 'xx';
@@ -193,12 +231,14 @@ class Commande
 
     /**
      * Renvois le numéro d'état d'une commande pour l'état et le $code précisé
-     * @param string $etat
-     * @param string $code
+     *
+     * @param string $etat Libélé de l'état; ex paye, AttentPayement
+     * @param string $code Code précisant le libélé (cb etc..)
+     *
      * @return int
      * @throws ShopException
      */
-    protected function _cherchEtat($etat, $code)
+    protected function cherchEtat($etat, $code)
     {
         $name = $etat . ucfirst($code);
         $cle = $this->config('etat', $name);
@@ -219,7 +259,7 @@ class Commande
      */
     public function changePourPaye($code = '')
     {
-        $nouvEtat = $this->_cherchEtat('paye', $code);
+        $nouvEtat = $this->cherchEtat('paye', $code);
         $this->_changeEtat($nouvEtat);
 
         /* = Modification de la date de réglement
@@ -242,7 +282,7 @@ class Commande
      */
     public function changePourExpedie($code = '')
     {
-        $nouvEtat = $this->_cherchEtat('expedie', $code);
+        $nouvEtat = $this->cherchEtat('expedie', $code);
         $this->_changeEtat($nouvEtat);
     }
 
@@ -257,7 +297,7 @@ class Commande
      */
     public function changeEtat($etape, $code = '')
     {
-        $nouvEtat = $this->_cherchEtat($etape, $code);
+        $nouvEtat = $this->cherchEtat($etape, $code);
         $this->_changeEtat($nouvEtat);
     }
 
@@ -296,8 +336,7 @@ class Commande
      */
     public function panierToCommande($modeReg, \Vel\Lib\Panier $panier)
     {
-        $name = 'attentPayement' . $modeReg;
-        $etat = $this->config('table', $name);
+        $etat = $this->cherchEtat('attentPayement', $modeReg);
 
         if (empty($etat)) {
             $message = $this->config('erreur', 'modeRegIncorecte');
@@ -312,7 +351,7 @@ class Commande
                . 'date = ' . 'NOW()' . ', '
                . 'mode_reg = ' . $this->db->quote($modeReg) . ', '
                . 'etat = ' . $etat;
-        $this->exec($query);
+        $this->db->exec($query);
         $this->id = $this->db->lastInsertId();
 
         $reference = $this->genereReference();
@@ -329,13 +368,15 @@ class Commande
 
         $ignore = array('id', 'id_panier', 'id_commande');
 
-        foreach ($desc as $key => $value)
-            if (in_array($value, $ignore))
+        foreach ($desc as $key => $value) {
+            if (in_array($value, $ignore)) {
                 unset($desc[$key]);
+            }
+        }
 
         $query = 'INSERT INTO ' . $this->config('table', 'commandeLigne') . ' '
                . 'SELECT "", ' . $this->id . ', ' . implode(', ', $desc) . ' '
-               . 'FROM ' . $panier->config('table', 'panierLigne') . ' '
+               . 'FROM ' . $panier->config->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $panier->getId();
         try {
             $this->db->exec($query);
@@ -376,7 +417,7 @@ class Commande
 
             $result = $this->db->query($query)->fetch();
 
-        } while (empty($result));
+        } while (!empty($result));
 
         return $ref;
 	}
