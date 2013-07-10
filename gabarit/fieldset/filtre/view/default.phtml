@@ -8,15 +8,16 @@
                 <fieldset>
                     <legend>Filtres</legend>
 <?php
-    $value = $this->values[0];
-    if (count($value['filtres']) > 0) {
-        foreach ($value['filtres'] as $filtreId => $options) {
-            $filtreShow = $options[0]['actif'];
-            $libre      = $options[0]['libre'];
-            $filtreName = $options[0]['filtre_name'];
+    if (!empty($this->filtres)) {
+        foreach ($this->filtres as $filtreId => $options) {
+            if (isset($this->values['filtres'][$filtreId])) {
+                $filtreShow = true;
+            } else {
+                $filtreShow = false;
+            }
 ?>
                     <div class="line">
-                        <label for="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>"><?php echo $filtreName; ?></label>
+                        <label for="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>"><?php echo $options[0]['filtreName']; ?></label>
                         <input class="filtre-select" type="checkbox" id="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>" name="filtre[]" value="<?php echo $filtreId; ?>"<?php if ($filtreShow) { echo ' checked="checked"'; } ?> />
                     </div>
 <?php
@@ -25,45 +26,30 @@
 ?>
                 </fieldset>
 <?php
-    foreach ($this->values as $value) {
-        $this->_buildChamps($value);
-?>
-                <fieldset class="sort-elmt">
-                    <legend><?php echo $this->valueLabel; ?></legend>
-
-                    <div>
-                        <div class="line">
-                            <label for="visible-<?php echo $this->gabarit->getId() . '-' . (isset($value['id']) ? $value['id'] : 0) . '-' . (isset($value['id_version']) ? $value['id_version'] : 1) ?>">Visible</label>
-                            <input type="checkbox" id="visible-<?php echo $this->gabarit->getId() . '-' . (isset($value['id']) ? $value['id'] : 0) . '-' . (isset($value['id_version']) ? $value['id_version'] : 1) ?>" class="changevisible"<?php echo (isset($value['visible']) && $value['visible'] ? ' checked="checked"' : '') ?> />
-                            <input type="hidden" value="<?php echo (isset($value['visible']) && $value['visible'] ? 1 : 0) ?>" name="visible[]" />
-                        </div>
-
-                        <div class="bloc-field-content<?php if (!isset($value['visible']) || !$value['visible']) { echo ' translucide'; } ?>">
-                            <input type="hidden" name="id_<?php echo $this->gabarit->getTable() . '[]" value="' . (isset($value['id']) ? $value['id'] : '') ?>" />
-
-<?php
-        echo $this->champsHTML;
-
-        foreach ($value['filtres'] as $filtreId => $options) {
-            $filtreShow = $options[0]['actif'];
+    foreach ($this->filtres as $filtreId => $options) {
+            if (isset($this->values['filtres'][$filtreId])) {
+                $filtreShow = true;
+            } else {
+                $filtreShow = false;
+            }
             $libre      = $options[0]['libre'];
-            $filtreName = $options[0]['filtre_name'];
+            $filtreName = $options[0]['filtreName'];
 ?>
                             <div class="line filtre-content_<?php echo $filtreId; ?>"<?php if (!$filtreShow) { echo ' style="display:none;"'; } ?>>
                                 <div class="clearin"></div>
 <?php
-            if ($libre > 0) {
+            if ($libre == true) {
                 $option = $options[0];
                 $val  = '';
-                if (isset($option['value'])) {
-                    $val  = $option['value'];
+                if (isset($this->values['filtres'][$filtreId][0]['value'])) {
+                    $val  = $this->values['filtres'][$filtreId][0]['value'];
                 }
 ?>
                                 <h4 style="text-align:center; color:#A1A1A1;"><?php echo $filtreName; ?></h4>
 
                                 <div class="line">
-                                    <label for="option_<?php echo $option['id'] . '_' . $value['id'] . '_' . $this->versionId; ?>"></label>
-                                    <input id="option_<?php echo $option['id'] . '_' . $value['id'] . '_' . $this->versionId; ?>" type="text" name="option[<?php echo $filtreId; ?>][<?php echo $option['id']; ?>][]" value="<?php echo $val; ?>" />
+                                    <label for="option_<?php echo $filtreId . '_' . $this->versionId; ?>"></label>
+                                    <input id="option_<?php echo $filtreId . '_' . $this->versionId; ?>" type="text" name="option[<?php echo $filtreId; ?>][]" value="<?php echo $val; ?>" />
                                 </div>
 <?php
             } else {
@@ -73,15 +59,20 @@
                 foreach ($options as $option) {
                     $checked = '';
                     $val     = 0;
-                    if (isset($option['value'])) {
-                        $checked = ' checked="checked"';
-                        $val     = 1;
+                    if (isset($this->values['filtres'][$filtreId])) {
+                        foreach ($this->values['filtres'][$filtreId] as $optVal) {
+                            if ($optVal['id_option'] == $option['optionId']) {
+                                $checked = ' checked="checked"';
+                                $val     = 1;
+                                break;
+                            }
+                        }
                     }
 ?>
                                 <div class="line">
-                                    <label for="option_<?php echo $option['id'] . '_' . $value['id'] . '_' . $this->versionId; ?>"><?php echo $option['name']; ?></label>
-                                    <input type="checkbox" class="js-checkbox" id="option_<?php echo $option['id'] . '_' . $value['id'] . '_' . $this->versionId; ?>"<?php echo $checked; ?> />
-                                    <input type="hidden" name="option[<?php echo $filtreId; ?>][<?php echo $option['id']; ?>][]" value="<?php echo $val; ?>" />
+                                    <label for="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"><?php echo $option['name']; ?></label>
+                                    <input type="checkbox" class="js-checkbox" id="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"<?php echo $checked; ?> />
+                                    <input type="hidden" name="option[<?php echo $filtreId; ?>][<?php echo $option['optionId']; ?>]" value="<?php echo $val; ?>" />
                                 </div>
 <?php
                 }
@@ -91,27 +82,6 @@
 <?php
         }
 ?>
-                        </div>
-                    </div>
-
-                    <div style="clear:both;">
-                        <div class="btn-a gradient-blue fr">
-                            <a href="#" class="delBloc<?php echo ( count($this->values) > 1 ? '' : ' translucide' ) ?>">
-                                <img src="img/back/white/trash_stroke_16x16.png" border="0" alt="supprimer"/>
-                            </a>
-                        </div>
-
-                        <div class="btn-a gradient-blue">
-                            <a href="#" class="sort-move">
-                                <img src="img/back/deplacer.png" alt="Déplacer" />
-                            </a>
-                        </div>
-                    </div>
-                </fieldset>
-<?php
-    }
-?>
-                <div class="buttonright"><div class="btn-a gradient-blue"><a class="addBloc" href="#">Ajouter un bloc</a></div></div>
             </div>
         </fieldset>
 

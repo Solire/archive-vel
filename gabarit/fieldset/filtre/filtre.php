@@ -37,19 +37,24 @@ class Filtre extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
 
         $db = \Slrfw\Registry::get('db');
 
-        $query = 'SELECT * '
+        $query = 'SELECT id, name filtreName, ordre, libre '
                . 'FROM filtre '
                . 'WHERE suppr = 0 '
                . ' AND libre = 1 ';
 
-        $this->filtres = $db->query($query)->fetchAll();
+        $filtres = $db->query($query)->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_ASSOC);
 
-        $query = 'SELECT * '
+
+        $query = 'SELECT f.id, f.name filtreName, fo.id optionId, fo.name, '
+               . '  fo.ordre, libre '
                . 'FROM filtre_option fo '
                . 'INNER JOIN filtre f '
                . ' ON f.id = fo.id_filtre '
                . '  AND f.suppr = 0 '
                . 'WHERE fo.suppr = 0 ';
+        $foo = $db->query($query)->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_ASSOC);
+
+        $this->filtres = $filtres + $foo;
         parent::start();
     }
 }
