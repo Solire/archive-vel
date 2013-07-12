@@ -8,31 +8,22 @@
  * @license    Solire http://www.solire.fr/
  */
 
-/* EXEMPLE
-<?php
-
-$config = array(
-    array(
-        "label" => "Contenu institutionnel",
-        "gabarits" => array(1, 5, 6, 7, 8),
-    ),
-    array(
-        "label" => "Contenu secteur d'activité",
-        "gabarits" => array(3, 4),
-    ),
-);
- */
+/** Récupération de la configuration de la base **/
+$path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+$confVel = new \Slrfw\Config($path);
+unset($path);
 
 $config = array(
     101 => array(
         'label' => 'Produits',
-        'gabarits' => array(10),
+        'gabarits' => array($confVel->get('gabarit', 'idProduit')),
         'display' => false,
     ),
     102 => array(
         'label' => 'Rubriques',
-        'gabarits' => array(11),
+        'gabarits' => array($confVel->get('gabarit', 'idRubrique')),
         'display' => false,
     ),
 );
 
+unset($confVel);

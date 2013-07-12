@@ -1,6 +1,11 @@
 <h1>Liste des produits</h1>
 
 <?php $this->add('breadcrumbs.phtml'); ?>
+<div style="margin: 5px;">
+    <a style="" class="btn btn-small btn-success btn-crea" href="back/page/display.html?id_gabarit=<?php echo $this->confVel->get('gabarit', 'idProduit') ?>">
+        Produit
+    </a>
+</div>
 
 <?php echo $this->datatableRender; ?>
 

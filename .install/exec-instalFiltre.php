@@ -52,32 +52,3 @@ CREATE TABLE IF NOT EXISTS `filtre_option` (
 
 $db->exec($query);
 
-$path = \Slrfw\FrontController::search('config/filtre.ini', false);
-$config = new \Slrfw\Config($path);
-unset($path);
-
-$query = '
-CREATE TABLE IF NOT EXISTS `' . $config->get('table', 'filtres') . '` (
-  `id_gab_page` int(11) NOT NULL,
-  `id_filtre` int(11) NOT NULL,
-  PRIMARY KEY (`id_gab_page`,`id_filtre`),
-  KEY `id_gab_page` (`id_gab_page`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
-
-$db->exec($query);
-
-
-$query = '
-CREATE TABLE IF NOT EXISTS `' . $config->get('table', 'filtresOptions') . '` (
-  `id_gab_page` int(11) NOT NULL,
-  `id_reference` int(11) NOT NULL,
-  `id_filtre` int(11) NOT NULL,
-  `id_option` int(11) NOT NULL,
-  `value` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id_reference`,`id_option`),
-  KEY `index produit` (`id_gab_page`),
-  KEY `index reference` (`id_reference`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
-
-$db->exec($query);
-

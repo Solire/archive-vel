@@ -31,7 +31,7 @@ class Produits extends \App\Back\Controller\Main
     {
         /** Récupération de la configuration de la base **/
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
-        $this->confSql = new \Slrfw\Config($path);
+        $this->confVel = new \Slrfw\Config($path);
         unset($path);
 
 
@@ -54,6 +54,8 @@ class Produits extends \App\Back\Controller\Main
             'url' => 'back/board/start.html',
         );
         $this->_javascript->addLibrary('back/js/listeproduits.js');
+
+        $this->_view->confVel = $this->confVel;
     }
 
 
@@ -80,7 +82,7 @@ class Produits extends \App\Back\Controller\Main
 
         $dispo = (boolean) $_POST['disponible'];
 
-        $query = 'UPDATE ' . $this->confSql->get('table', 'produit') . ' SET '
+        $query = 'UPDATE ' . $this->confVel->get('table', 'produit') . ' SET '
                . '  disponible = ' . (int) $dispo . ' '
                . 'WHERE id_gab_page = ' . (int) $_POST['id_gab_page'] . ' '
                . ' AND id_version = ' . $idVersion . ' ';
