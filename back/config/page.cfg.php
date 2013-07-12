@@ -28,6 +28,11 @@ $config = array(
         'label' => 'Produits',
         'gabarits' => array(10),
         'display' => false,
-    )
+    ),
+    102 => array(
+        'label' => 'Rubriques',
+        'gabarits' => array(11),
+        'display' => false,
+    ),
 );
 

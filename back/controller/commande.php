@@ -61,7 +61,5 @@ class Commande extends \App\Back\Controller\Main
 
         $this->_view->list = $commande->listeExp();
     }
-
-
 }
 
