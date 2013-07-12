@@ -1,12 +1,11 @@
+<fieldset>
+    <legend><?php echo $this->gabarit->getLabel(); ?></legend>
+
+    <div style="display:none;" class="sort-box">
+        <div style="background-color: white; padding: 0px 5px; font-size: 11px; display: block; margin-top: -25px;" class="expand-collapse fr"><a style="font-size:11px" href="#" class="expand disabled">Tout déplier</a> / <a style="font-size:11px" href="#" class="collapse">Tout replier</a></div>
 
         <fieldset>
-            <legend><?php echo $this->gabarit->getLabel(); ?></legend>
-
-            <div style="display:none;" class="sort-box">
-                <div style="background-color: white; padding: 0px 5px; font-size: 11px; display: block; margin-top: -25px;" class="expand-collapse fr"><a style="font-size:11px" href="#" class="expand disabled">Tout déplier</a> / <a style="font-size:11px" href="#" class="collapse">Tout replier</a></div>
-
-                <fieldset>
-                    <legend>Filtres</legend>
+            <legend>Définir liste des critères du produit</legend>
 <?php
     if (!empty($this->filtres)) {
         foreach ($this->filtres as $filtreId => $options) {
@@ -18,83 +17,85 @@
 ?>
                     <div class="line">
                         <label for="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>"><?php echo $options[0]['filtreName']; ?></label>
-                        <input class="filtre-select" type="checkbox" id="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>" name="filtre[]" value="<?php echo $filtreId; ?>"<?php if ($filtreShow) { echo ' checked="checked"'; } ?> />
+                        <input class="filtre-select" type="checkbox" id="filtre_<?php echo $filtreId . '_' . $this->versionId; ?>" name="filtre[]" value="<?php echo $filtreId; ?>"<?php
+                if ($filtreShow) {
+                    echo ' checked="checked"';
+                }
+?> />
                     </div>
 <?php
         }
     }
 ?>
-                </fieldset>
+        </fieldset>
 <?php
     foreach ($this->filtres as $filtreId => $options) {
-            if (isset($this->values['filtres'][$filtreId])) {
-                $filtreShow = true;
-            } else {
-                $filtreShow = false;
+        if (isset($this->values['filtres'][$filtreId])) {
+            $filtreShow = true;
+        } else {
+            $filtreShow = false;
+        }
+        $libre = $options[0]['libre'];
+        $filtreName = $options[0]['filtreName'];
+?>
+            <fieldset class="line filtre-content_<?php echo $filtreId; ?>"<?php if (!$filtreShow) {
+                echo ' style="display:none;"';
+            } ?>>
+                <legend><?php echo $filtreName; ?></legend>
+<?php
+        if ($libre == true) {
+            $option = $options[0];
+            $val = '';
+            if (isset($this->values['filtres'][$filtreId][0]['value'])) {
+                $val = $this->values['filtres'][$filtreId][0]['value'];
             }
-            $libre      = $options[0]['libre'];
-            $filtreName = $options[0]['filtreName'];
 ?>
-                            <div class="line filtre-content_<?php echo $filtreId; ?>"<?php if (!$filtreShow) { echo ' style="display:none;"'; } ?>>
-                                <div class="clearin"></div>
+                    <div class="line">
+                        <label for="option_<?php echo $filtreId . '_' . $this->versionId; ?>"></label>
+                        <input id="option_<?php echo $filtreId . '_' . $this->versionId; ?>" type="text" name="option[<?php echo $filtreId; ?>][]" value="<?php echo $val; ?>" />
+                    </div>
 <?php
-            if ($libre == true) {
-                $option = $options[0];
-                $val  = '';
-                if (isset($this->values['filtres'][$filtreId][0]['value'])) {
-                    $val  = $this->values['filtres'][$filtreId][0]['value'];
-                }
-?>
-                                <h4 style="text-align:center; color:#A1A1A1;"><?php echo $filtreName; ?></h4>
+        } else {
 
-                                <div class="line">
-                                    <label for="option_<?php echo $filtreId . '_' . $this->versionId; ?>"></label>
-                                    <input id="option_<?php echo $filtreId . '_' . $this->versionId; ?>" type="text" name="option[<?php echo $filtreId; ?>][]" value="<?php echo $val; ?>" />
-                                </div>
-<?php
-            } else {
-?>
-                                <h4 style="text-align:center; color:#A1A1A1;"><?php echo $filtreName; ?></h4>
-<?php
-                foreach ($options as $option) {
-                    $checked = '';
-                    $val     = 0;
-                    if (isset($this->values['filtres'][$filtreId])) {
-                        foreach ($this->values['filtres'][$filtreId] as $optVal) {
-                            if ($optVal['id_option'] == $option['optionId']) {
-                                $checked = ' checked="checked"';
-                                $val     = 1;
-                                break;
-                            }
+            foreach ($options as $option) {
+                $checked = '';
+                $val = 0;
+                if (isset($this->values['filtres'][$filtreId])) {
+                    foreach ($this->values['filtres'][$filtreId] as $optVal) {
+                        if ($optVal['id_option'] == $option['optionId']) {
+                            $checked = ' checked="checked"';
+                            $val = 1;
+                            break;
                         }
                     }
-?>
-                                <div class="line">
-                                    <label for="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"><?php echo $option['name']; ?></label>
-                                    <input type="checkbox" class="js-checkbox" id="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"<?php echo $checked; ?> />
-                                    <input type="hidden" name="option[<?php echo $filtreId; ?>][<?php echo $option['optionId']; ?>]" value="<?php echo $val; ?>" />
-                                </div>
-<?php
                 }
-            }
 ?>
-                            </div>
+                        <div class="line">
+                            <label for="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"><?php echo $option['name']; ?></label>
+                            <input type="checkbox" class="js-checkbox" id="option_<?php echo $filtreId . '_' . $option['optionId'] . '_' . $this->versionId; ?>"<?php echo $checked; ?> />
+                            <input type="hidden" name="option[<?php echo $filtreId; ?>][<?php echo $option['optionId']; ?>]" value="<?php echo $val; ?>" />
+                        </div>
 <?php
+            }
         }
 ?>
-            </div>
-        </fieldset>
+            </fieldset>
+<?php
+    }
+?>
+    </div>
+</fieldset>
 
-        <script type="text/javascript">
-$(function(){
-    $('.filtre-select').click(function(){
-        var filtreId = $(this).val();
-        if ($(this).is(':checked')) {
-            $('.filtre-content_' + filtreId).slideDown(500);
-        } else {
-            $('.filtre-content_' + filtreId).slideUp(500);
-        }
+<script type="text/javascript">
+    $(function() {
+        $('.filtre-select').click(function() {
+            var filtreId = $(this).val();
+            if ($(this).is(':checked')) {
+                $('.filtre-content_' + filtreId).slideDown(500);
+            } else {
+                $('.filtre-content_' + filtreId).slideUp(500);
+            }
+        });
     });
-});
-        </script>
+</script>
 
