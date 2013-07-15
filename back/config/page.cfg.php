@@ -23,6 +23,7 @@ $config = array(
         'label' => 'Rubriques',
         'gabarits' => array($confVel->get('gabarit', 'idRubrique')),
         'display' => false,
+        'noChild' => true,
     ),
 );
 
