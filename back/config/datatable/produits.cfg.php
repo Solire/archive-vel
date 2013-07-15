@@ -79,7 +79,7 @@ $config = array(
                 'table' => $confSql->get('table', 'reference'),
                 'columns' => array(
                     array(
-                        'name' => 'prix_ht',
+                        'name' => 'prix',
                     ),
                 ),
                 'index' => array(

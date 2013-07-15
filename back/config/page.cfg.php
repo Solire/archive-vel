@@ -25,6 +25,7 @@ $config = array(
         'display' => false,
         'noChild' => true,
         'noType' => true,
+        'urlRedir' => 'back/produits/start.html?filter[]=gab_page.id_parent|',
         'childName' => 'produit(s)',
     ),
 );
