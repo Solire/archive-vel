@@ -20,10 +20,12 @@ $config = array(
         'display' => false,
     ),
     102 => array(
-        'label' => 'Rubriques',
+        'label' => 'Liste des Rubriques',
         'gabarits' => array($confVel->get('gabarit', 'idRubrique')),
         'display' => false,
         'noChild' => true,
+        'noType' => true,
+        'childName' => 'produit(s)',
     ),
 );
 
