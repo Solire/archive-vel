@@ -23,10 +23,9 @@ $config = array(
         'label' => 'Liste des Rubriques',
         'gabarits' => array($confVel->get('gabarit', 'idRubrique')),
         'display' => false,
-        'noChild' => true,
         'noType' => true,
         'urlRedir' => 'back/produits/start.html?filter[]=gab_page.id_parent|',
-        'childName' => 'produit(s)',
+        'childName' => '',
     ),
 );
 
