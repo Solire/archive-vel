@@ -4,8 +4,8 @@
  *
  * @package    Vel
  * @subpackage Hook
- * @author     dev <dev@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 namespace Vel\Hook\Gabarit\CriteresBloc;
@@ -15,10 +15,10 @@ namespace Vel\Hook\Gabarit\CriteresBloc;
  *
  * @package    Vel
  * @subpackage Hook
- * @author     dev <dev@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
-class Filtre
+class Filtre implements \Slrfw\HookInterface
 {
     /**
      * Lien vers le fichier de configuration des filtres
