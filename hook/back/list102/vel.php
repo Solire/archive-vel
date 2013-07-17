@@ -31,7 +31,8 @@ class Vel implements \Slrfw\HookInterface
     {
         $db = \Slrfw\Registry::get('db');
         $query = 'SELECT p.*, CONCAT (COUNT(e.id) , " rubrique(s) & ", '
-               . '  COUNT(e2.id), " produit(s)") nbre_enfants '
+               . '  COUNT(e2.id), " produit(s)") aff_enfants, '
+               . '  COUNT(e.id) + COUNT(e2.id) nbre_enfants '
                . 'FROM gab_page p '
                . 'LEFT JOIN gab_page e '
                . ' ON e.id_parent = p.id '
@@ -56,7 +57,6 @@ class Vel implements \Slrfw\HookInterface
         $query .= 'AND p.id_gabarit IN (' . implode(', ', $env->gabaritsList) . ') '
                 . 'GROUP BY p.id '
                 . 'ORDER BY p.ordre ASC ';
-
 
         $metas = $db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         $version = $env->gabaritManager->getVersion($env->idVersion);

@@ -4,8 +4,8 @@
  *
  * @package    Back
  * @subpackage Gabarit
- * @author     dev <dev@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 /** Récupération de la configuration de la base **/

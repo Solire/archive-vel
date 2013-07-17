@@ -1,0 +1,33 @@
+<div class="line">
+    <label for="<?php echo $this->id; ?>">
+        <span>Rubrique : <?php echo in_array('form-oblig', explode(" ", $this->classes)) ? '<span class="required">*</span> ' : '' ; ?></span>
+    </label>
+    <select name="champ<?php echo $this->champ['id']; ?>[]" id="<?php echo $this->id; ?>" class="<?php echo $this->classes; ?>">
+        <option value="0">---</option>
+<?php
+    foreach ($this->rub[0] as $rub) {
+        if ($rub['id'] == $this->value) {
+            $select = ' selected="selected"';
+        } else {
+            $select = '';
+        }
+?>
+        <option<?php echo $select; ?> value="<?php echo $rub['id']; ?>" class="option1"><?php echo $rub['titre']; ?></option>
+<?php
+        if (!isset($this->rub[$rub['id']])) {
+            continue;
+        }
+        foreach ($this->rub[$rub['id']] as $sousRub) {
+            if ($sousRub['id'] == $this->value) {
+                $select = ' selected="selected"';
+            } else {
+                $select = '';
+            }
+?>
+        <option<?php echo $select; ?> value="<?php echo $sousRub['id']; ?>" class="option2"><?php echo $sousRub['titre']; ?></option>
+<?php
+        }
+    }
+?>
+    </select>
+</div>
