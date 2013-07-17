@@ -29,12 +29,12 @@ $(function() {
                     });
                 } else {
                     if (checked) {
-                        button.removeClass("icon-remove").addClass("icon-ok");
+                        button.html("oui");
                         $.sticky("Le produit a été rendue disponible", {
                             type: "success"
                         });
                     } else {
-                        button.removeClass("icon-ok").addClass("icon-remove");
+                        button.html("non");
                         $.sticky("Le produit a été rendue indisponible", {
                             type: "success"
                         });

@@ -30,7 +30,7 @@ class Vel implements \Slrfw\HookInterface
     public function run($env)
     {
         $db = \Slrfw\Registry::get('db');
-        $query = 'SELECT p.*, CONCAT (COUNT(e.id) , " rubrique(s) & ", '
+        $query = 'SELECT p.*, CONCAT (COUNT(e.id) , " sous-rubrique(s) & ", '
                . '  COUNT(e2.id), " produit(s)") aff_enfants, '
                . '  COUNT(e.id) + COUNT(e2.id) nbre_enfants '
                . 'FROM gab_page p '

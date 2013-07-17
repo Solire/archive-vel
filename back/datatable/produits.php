@@ -256,19 +256,19 @@ class Produits extends \Slrfw\Datatable\Datatable
         if ($dispo == 1) {
             $str = 'indisponible';
             $check = ' checked="checked"';
-            $class = 'icon-ok';
+            $msg = 'oui';
         } else {
             $str = 'disponible';
             $check = ' ';
-            $class = 'icon-remove';
+            $msg = 'non';
         }
 
         $actionHtml = '<a class="btn btn-small disponible" '
                     . 'title="Rendre ' . $str . '"><input type="checkbox" value="'
                     . $data['id'] . '|' . $data['id_version']
                     . '" style="display:none;" class="disponible-lang-' . $data['id']
-                    . '-' . $data['id_version'] . '" ' . $check . '/>'
-                    . '<i class="' . $class . '"></i></a>';
+                    . '-' . $data['id_version'] . '" ' . $check . '/><i>' . $msg
+                    . '</i></a>';
 
         return $actionHtml;
     }
