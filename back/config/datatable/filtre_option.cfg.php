@@ -10,7 +10,7 @@
 
 $config = array(
     'table' => array(
-        'title' => 'Liste des options de filtres',
+        'title' => 'Liste des options de critères',
         'title_item' => 'option',
         'suffix_genre' => 'e',
         'fixedheader' => false,
@@ -38,10 +38,6 @@ $config = array(
         ),
     ),
     'style' => array(
-        'datatable' => array(
-            'background' => '#FA287C',
-            'border-color' => '#FA287C',
-        ),
         'form' => 'bootstrap',
     ),
     'columns' => array(

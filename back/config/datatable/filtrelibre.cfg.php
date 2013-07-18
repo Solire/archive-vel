@@ -13,8 +13,8 @@ $config = array(
         'ShinForm',
     ),
     'table' => array(
-        'title' => 'Liste des filtres',
-        'title_item' => 'filtre',
+        'title' => 'Liste des critères',
+        'title_item' => 'critère',
         'suffix_genre' => '',
         'fixedheader' => false,
         'name' => 'filtre',
