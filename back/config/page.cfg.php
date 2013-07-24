@@ -25,6 +25,7 @@ $config = array(
         'display' => false,
         'noType' => true,
         'urlRedir' => 'back/produits/start.html?filter[]=gab_page.id_parent|',
+        'urlAjax' => 'back/page/children.html?c=102',
         'childName' => '',
     ),
 );
