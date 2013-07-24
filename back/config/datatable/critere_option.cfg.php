@@ -14,10 +14,10 @@ $config = array(
         'title_item' => 'option',
         'suffix_genre' => 'e',
         'fixedheader' => false,
-        'name' => 'filtre_option',
+        'name' => 'critere_option',
     ),
     'file' => array(
-        'upload_path' => 'public_html/medias/cli/Filtre',
+        'upload_path' => '',
         'upload_temp' => 'temp',
         'upload_vignette' => 'mini',
         'upload_apercu' => 'apercu',
@@ -58,10 +58,10 @@ $config = array(
             ),
         ),
         array(
-            'name' => 'id_filtre',
+            'name' => 'id_critere',
             'show' => false,
             'filter_field' => 'text',
-            'title' => 'Id_filtre',
+            'title' => 'Id_critere',
         )
     ),
 );

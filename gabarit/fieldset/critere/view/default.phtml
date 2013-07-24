@@ -1,0 +1,111 @@
+        <fieldset id="critereForm">
+            <legend><?php echo $this->gabarit->getLabel(); ?></legend>
+            <div style="display:none;" class="sort-box">
+                <div style="background-color: white; padding: 0px 5px; font-size: 11px; display: block; margin-top: -25px;" class="expand-collapse fr"><a style="font-size:11px" href="#" class="expand disabled">Tout déplier</a> / <a style="font-size:11px" href="#" class="collapse">Tout replier</a></div>
+
+<?php
+    foreach ($this->values as $value) {
+        if (empty($value)) {
+            $style = ' style="display:none;"';
+        } else {
+            $style = '';
+        }
+?>
+                <fieldset class="sort-elmt"<?php echo $style; ?>>
+                    <legend><?php if (isset($value['name'])) { echo $value['name'];} ?></legend>
+
+                    <div class="form">
+                        <div class="line" style="display:none;">
+                            <label for="visible-<?php echo $this->gabarit->getId() . '-' . (isset($value['id']) ? $value['id'] : 0) . '-' . (isset($value['id_version']) ? $value['id_version'] : 1) ?>">Visible</label>
+                            <input type="checkbox" id="visible-<?php echo $this->gabarit->getId() . '-' . (isset($value['id']) ? $value['id'] : 0) . '-' . (isset($value['id_version']) ? $value['id_version'] : 1) ?>" class="changevisible"<?php echo (isset($value['visible']) && $value['visible'] ? ' checked="checked"' : '') ?> />
+                            <input type="hidden" value="<?php echo (isset($value['visible']) && $value['visible'] ? 1 : 0) ?>" name="visible[]" />
+                        </div>
+
+                        <div<?php echo (isset($value['visible']) && $value['visible'] ? '' : ' class="translucide"') ?>>
+                            <input class="blockIndic" type="hidden" name="id_<?php echo $this->gabarit->getTable() . '[]" value="' . (isset($value['id']) ? $value['id'] : '') ?>" />
+                            <input class="val" type="hidden" name="champ<?php echo $this->idChamp; ?>[]" value="<?php if (isset($value['id_critere'])) { echo $value['id_critere'];} ?>" />
+                        </div>
+                    </div>
+                    <div style="float:left; margin-left:8px;">
+                        <div class="btn-toolbar">
+                            <div class="btn-group btn-bloc-action">
+                                <a href="#" class="btn btn-small btn-info sort-move" title="Déplacer" <?php echo ( count($this->values) > 1 ? '' : ' style="display: inline-bloc;"' ) ?>><i class="icon-retweet"></i></a>
+                                <a href="#" class="btn btn-small btn-info btn-changevisible" title="Visible sur le site"><i class="<?php echo (isset($value['visible']) && $value['visible'] ? 'icon-eye-open' : 'icon-eye-close translucide') ?>"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+<?php
+    }
+?>
+                <a class="btn btn-small btn-info addCritere" style="float:right;" data-toggle="modal" href="#modCrit"><i class="icon-plus"></i>Gestion des critères</a>
+            </div>
+        </fieldset>
+<script type="text/javascript">
+    $(function() {
+        $('.addCritere').click(function() {
+            var taxeId = $(this).val();
+            if ($(this).is(':checked')) {
+                $('.taxe-content_' + taxeId).slideDown(500);
+            } else {
+                $('.taxe-content_' + taxeId).slideUp(500);
+            }
+        });
+
+        /* = Séléction des critères
+        `------------------------------------------------- */
+        $("span.critereSelect").click(function(){
+            $(this).toggleClass("btn-success");
+        });
+
+        $("button.saveCriteres").click(function(e){
+            e.preventDefault();
+
+            var button = $("a.addCritere"),
+                adupliquer = button.prev(),
+                add = false;
+
+            $("fieldset", button.parent()).addClass("old");
+            $("input.blockIndic", button.parent()).val("ANNULE");
+
+            $("span.critereSelect.btn-success").each(function(){
+                add = true;
+                var clone = adupliquer.clone(false).clearForm();
+                clone.find("legend").html($(this).html());
+                clone.find("input.val").val($(this).data("critereid"));
+                clone.insertBefore(button);
+                clone.show().removeClass("old");
+            });
+
+            if (!add) {
+                $("fieldset.old:first", button.parent()).removeClass("old").hide();
+            }
+            $("fieldset.old", button.parent()).remove();
+        });
+    });
+</script>
+<div style="width: 616px;margin-left: -308px; display:none;" class="modal  hide fade" id="modCrit" tabindex="-1" role="dialog" aria-labelledby="modCrit" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Sélection des critères applicables</h3>
+    </div>
+    <div class="modal-body">
+<?php
+    foreach ($this->criteres as $critere) {
+        $select = '';
+        foreach ($this->values as $value) {
+            if ($critere['id'] == $value['id_critere']) {
+                $select = ' btn-success';
+                break;
+            }
+        }
+?>
+        <span class="critereSelect btn-small btn <?php echo $select; ?>" data-critereId="<?php echo $critere['id']; ?>"><?php echo $critere['name']; ?></span>
+<?php
+    }
+?>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary saveCriteres btn-small" data-dismiss="modal" aria-hidden="true">Enregistrer les critères</button>
+    </div>
+</div>

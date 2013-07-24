@@ -17,7 +17,7 @@ $config = array(
         'title_item' => 'critère',
         'suffix_genre' => '',
         'fixedheader' => false,
-        'name' => 'filtre',
+        'name' => 'critere',
         'detail' => false,
     ),
     'where' => array('libre = 1'),

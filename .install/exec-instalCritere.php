@@ -25,7 +25,7 @@ $db = \Slrfw\Registry::get('db');
 
 /** Mettre script d'installation ici  **/
 
-$query = 'CREATE TABLE IF NOT EXISTS `filtre` (
+$query = 'CREATE TABLE IF NOT EXISTS `critere` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `libre` tinyint(1) NOT NULL,
@@ -39,15 +39,15 @@ $query = 'CREATE TABLE IF NOT EXISTS `filtre` (
 $db->exec($query);
 
 $query = '
-CREATE TABLE IF NOT EXISTS `filtre_option` (
+CREATE TABLE IF NOT EXISTS `critere_option` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `id_filtre` int(11) NOT NULL,
+  `id_critere` int(11) NOT NULL,
   `ordre` int(11) NOT NULL,
   `suppr` tinyint(1) NOT NULL,
   `date_modif` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `id_filtre` (`id_filtre`)
+  KEY `id_critere` (`id_critere`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 
 $db->exec($query);

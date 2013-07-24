@@ -17,12 +17,12 @@ $config = array(
         'title_item' => 'critère',
         'suffix_genre' => '',
         'fixedheader' => false,
-        'name' => 'filtre',
+        'name' => 'critere',
         'detail' => true,
     ),
     'where' => array('libre = 0'),
     'file' => array(
-        'upload_path' => 'public_html/medias/cli/Filtre',
+        'upload_path' => '',
         'upload_temp' => 'temp',
         'upload_vignette' => 'mini',
         'upload_apercu' => 'apercu',
@@ -72,8 +72,8 @@ $config = array(
         ),
         array(
             'content' => '<div rel="back/dashboard/start.html?'
-                . 'name=filtre_option&nomain=1&nojs=1" data-filter='
-                . '"filter[]=id_filtre|[INDEX]" class="ajax-load"></div>',
+                . 'name=critere_option&nomain=1&nojs=1" data-filter='
+                . '"filter[]=id_critere|[INDEX]" class="ajax-load"></div>',
             'show_detail' => true,
             'title' => 'Options du filtre',
         ),
