@@ -94,6 +94,9 @@
     foreach ($this->criteres as $critere) {
         $select = '';
         foreach ($this->values as $value) {
+            if (empty($value)) {
+                continue;
+            }
             if ($critere['id'] == $value['id_critere']) {
                 $select = ' btn-success';
                 break;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Enregistrement des filtres
+ * Enregistrement des critères
  *
  * @package    Vel
  * @subpackage Hook
@@ -11,7 +11,7 @@
 namespace Vel\Hook\Gabarit\ProduitSave;
 
 /**
- * Enregistrement des filtres
+ * Enregistrement des critères
  *
  * @package    Vel
  * @subpackage Hook
@@ -21,9 +21,9 @@ namespace Vel\Hook\Gabarit\ProduitSave;
 class Filtre implements \Slrfw\HookInterface
 {
     /**
-     * Lien vers le fichier de configuration des filtres
+     * Lien vers le fichier de configuration des critères
      */
-    const CONFIG_PATH = 'config/filtre.ini';
+    const CONFIG_PATH = 'config/critere.ini';
 
     /**
     * Enregistrement des filtres
@@ -42,18 +42,17 @@ class Filtre implements \Slrfw\HookInterface
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $config = new \Slrfw\Config($path);
         unset($path);
-
         /** Filtres applicables au Gabarit */
         $query  = 'DELETE FROM ' . $config->get('table', 'filtres') . ' '
                 . 'WHERE id_gab_page = ' . $page->getMeta('id') . ' ';
-        $db->exec($query);
+//        $db->exec($query);
 
         if (isset($donnees['filtre'])) {
             foreach ($donnees['filtre'] as $filtreId) {
                 $query  = 'INSERT INTO ' . $config->get('table', 'filtres') . ' SET '
                         . ' id_gab_page = ' . $page->getMeta('id') . ','
                         . ' id_filtre = ' . $filtreId;
-                $db->exec($query);
+//                $db->exec($query);
             }
         }
 

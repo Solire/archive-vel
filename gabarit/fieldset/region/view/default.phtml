@@ -1,0 +1,42 @@
+<?php
+    if (!empty($this->regions)) {
+
+    }
+?>
+<fieldset>
+    <legend><?php echo $this->gabarit->getLabel(); ?></legend>
+
+    <div style="display:none;" class="sort-box">
+        <div style="background-color: white; padding: 0px 5px; font-size: 11px; display: block; margin-top: -25px;" class="expand-collapse fr"><a style="font-size:11px" href="#" class="expand disabled">Tout déplier</a> / <a style="font-size:11px" href="#" class="collapse">Tout replier</a></div>
+
+        <fieldset>
+            <legend>Définir liste des critères du produit</legend>
+<?php
+    if (!empty($this->regions)) {
+        $select = $this->values;
+        foreach ($this->regions as $idRegion => $region) {
+            $regionCheck = false;
+            foreach ($select as $key => $value) {
+                if ($value['id_region'] == $idRegion) {
+                    $regionCheck = true;
+                    unset($select[$key]);
+                    break;
+                }
+            }
+?>
+                    <div class="line tier">
+                        <label for="taxe_<?php echo $idRegion; ?>"><?php echo $region[0]['nom']; ?></label>
+                        <input class="taxe-select" type="checkbox" id="region_<?php echo $idRegion; ?>" name="region[]" value="<?php echo $idRegion; ?>"<?php
+                if ($regionCheck) {
+                    echo ' checked="checked"';
+                }
+?> />
+                    </div>
+<?php
+        }
+    }
+?>
+        </fieldset>
+    </div>
+</fieldset>
+
