@@ -1,0 +1,75 @@
+
+<table>
+    <tr>
+<?php
+    foreach ($this->colonnes as $col) {
+?>
+        <th><?php echo $col['name']; ?></th>
+<?php
+    }
+?>
+    </tr>
+</table>
+<div style="width: 616px;margin-left: -308px;" class="modal fade" id="modRef" tabindex="-1" role="dialog" aria-labelledby="modCrit" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Ajout / Édition de références</h3>
+    </div>
+    <div class="modal-body">
+<?php
+    for ($i = 0; $i < count($this->colonnes); $i++) {
+?>
+    <fieldset>
+        <legend><?php echo $this->colonnes[$i]['name']; ?></legend>
+<?php
+        switch ($this->colonnes[$i]['type']) {
+            case 'crit':
+                if (empty($this->colonnes[$i]['select'])) {
+?>
+        <input type="text" name="crit_<?php echo $this->colonnes[$i]['id_critere']; ?>" />
+<?php
+                } else {
+?>
+        <select name="">
+<?php
+                    foreach ($this->colonnes[$i]['select'] as $opt) {
+?>
+            <option name="crit_<?php echo $this->colonnes[$i]['id_critere']; ?>" value="<?php echo $opt['id']; ?>"><?php echo $opt['name']; ?></option>
+<?php
+                    }
+?>
+        </select>
+<?php
+                }
+                break;
+            case 'prix':
+?>
+        <div style="display: block;" class="line tier"><label for="reg_taxe">Taxe</label><input id="reg_taxe" name="reg_taxe_<?php echo $opt['id_region']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ht">Prix HT</label><input id="reg_ht" name="reg_ht_<?php echo $opt['id_region']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ttc">Prix TTC</label><input id="reg_ttc" name="reg_ttc_<?php echo $opt['id_region']; ?>" type="text" /></div>
+<?php
+                break;
+        }
+?>
+    </fieldset>
+<?php
+    }
+?>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary saveRef btn-small" data-dismiss="modal" aria-hidden="true">Enregistrer la référence</button>
+    </div>
+</div>
+
+<a class="btn btn-small btn-info addRef" style="float:right;" data-toggle="modal" href="#modRef"><i class="icon-plus"></i>Ajouter une référence</a>
+
+<script type="text/javascript">
+    $(function() {
+        $(".saveRef").click(function(){
+            var data = {};
+            $("#modRef input, #modeRef select").each(function(){
+
+            });
+        });
+    });
+</script>

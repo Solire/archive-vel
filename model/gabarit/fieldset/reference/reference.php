@@ -8,7 +8,7 @@
  * @license    Solire http://www.solire.fr/
  */
 
-namespace Vel\Gabarit\Fieldset\Reference;
+namespace Vel\Model\Gabarit\Fieldset\Reference;
 
 /**
  * Affichage des blocs Références
@@ -39,6 +39,22 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $config = new \Slrfw\Config($path);
 
+        $this->colonnes = array();
+        $this->colonnes[] = array(
+            'name' => 'code',
+            'type' => 'data',
+            'id' => 'id_gab_page',
+        );
+
+        $this->colonnes[] = array(
+            'name' => 'EAN',
+            'type' => 'data',
+            'id' => 'id_gab_page',
+        );
+
+
+        $this->start = count($this->colonnes);
+
         /** Chargement des critères **/
         $query = 'SELECT * '
                . 'FROM ' . $config->get('table', 'produitCritere') . ' crit '
@@ -49,11 +65,19 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
                . ' AND crit.suppr = 0 ';
         $this->criteres = $db->query($query)->fetchAll();
 
-        $colonnes = array();
         foreach ($this->criteres as $crit) {
-            $colonnes[] = array(
+            $select = null;
+            if ($crit['libre'] == 0) {
+                $query = 'SELECT id, name '
+                       . 'FROM ' . $config->get('table', 'critereOption') . ' co '
+                       . 'WHERE id_critere = ' . $crit['id_critere'] . ' ';
+                $select = $db->query($query)->fetchAll();
+            }
+
+            $this->colonnes[] = array(
                 'name' => $crit['name'],
                 'type' => 'crit',
+                'select' => $select,
                 'id' => 'id_critere',
             );
         }
@@ -67,6 +91,13 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
                . 'WHERE reg.id_gab_page = ' . $this->idGabPage . ' '
                . ' AND reg.suppr = 0 ';
         $this->regions = $db->query($query)->fetchAll();
+        foreach ($this->regions as $region) {
+            $this->colonnes[] = array(
+                'name' => $region['nom'],
+                'type' => 'prix',
+                'id' => 'id_region',
+            );
+        }
 
         parent::start();
     }

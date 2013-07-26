@@ -10,7 +10,7 @@
  * @license    Solire http://www.solire.fr/
  */
 
-namespace Vel\Gabarit\Fieldset\Region;
+namespace Vel\Model\Gabarit\Fieldset\Region;
 
 /**
  * Affichage des blocs Région

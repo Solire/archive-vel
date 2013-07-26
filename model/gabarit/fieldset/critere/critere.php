@@ -8,7 +8,7 @@
  * @license    Solire http://www.solire.fr/
  */
 
-namespace Vel\Gabarit\Fieldset\Critere;
+namespace Vel\Model\Gabarit\Fieldset\Critere;
 
 /**
  * Affichage des blocs Critères

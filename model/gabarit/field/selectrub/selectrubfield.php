@@ -8,7 +8,7 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-namespace Vel\Gabarit\Field\SelectRub;
+namespace Vel\Model\Gabarit\Field\SelectRub;
 
 /**
  *
