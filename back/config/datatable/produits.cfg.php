@@ -72,24 +72,6 @@ $config = array(
             'filter_field' => 'text',
             'title' => 'Rubrique',
         ),
-        /** Colonne Prix **/
-        array(
-            'name' => 'id',
-            'from' => array(
-                'table' => $confSql->get('table', 'reference'),
-                'columns' => array(
-                    array(
-                        'name' => 'prix',
-                    ),
-                ),
-                'index' => array(
-                    'id_gab_page' => 'THIS',
-                )
-            ),
-            'show' => true,
-            'filter_field' => 'text',
-            'title' => 'Prix',
-        ),
         array(
             'special' => 'buildDispo',
             'show' => true,
