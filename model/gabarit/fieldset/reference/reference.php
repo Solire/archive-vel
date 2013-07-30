@@ -42,14 +42,16 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
         $this->colonnes = array();
         $this->colonnes[] = array(
             'name' => 'code',
+            'nameSql' => 'code',
             'type' => 'data',
-            'id' => 'id_gab_page',
+            'id' => 'code',
         );
 
         $this->colonnes[] = array(
             'name' => 'EAN',
+            'nameSql' => 'ean',
             'type' => 'data',
-            'id' => 'id_gab_page',
+            'id' => 'ean',
         );
 
 
@@ -76,9 +78,9 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
 
             $this->colonnes[] = array(
                 'name' => $crit['name'],
-                'type' => 'crit',
+                'type' => 'criteres',
                 'select' => $select,
-                'id' => 'id_critere',
+                'id' => $crit['id_critere'],
             );
         }
 
@@ -92,10 +94,20 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
                . ' AND reg.suppr = 0 ';
         $this->regions = $db->query($query)->fetchAll();
         foreach ($this->regions as $region) {
+            $query = 'SELECT * '
+                   . 'FROM ' . $config->get('table', 'regionTaxe') . ' '
+                   . 'WHERE id_region = ' . $region['id_region'] . ' ';
+            $select = $db->query($query)->fetchAll();
+
+            if (empty($select)) {
+                continue;
+            }
+
             $this->colonnes[] = array(
                 'name' => $region['nom'],
                 'type' => 'prix',
-                'id' => 'id_region',
+                'id' => $region['id_region'],
+                'select' => $select,
             );
         }
 

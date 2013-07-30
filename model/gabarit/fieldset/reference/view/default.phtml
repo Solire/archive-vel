@@ -9,6 +9,32 @@
     }
 ?>
     </tr>
+<?php
+    foreach ($this->values as $ref) {
+?>
+    <tr>
+<?php
+        foreach ($this->colonnes as $col) {
+
+            $value = '-';
+            if (isset($ref[$col['type']]) && $col['type'] !== 'data') {
+                if (isset($ref[$col['type']][$col['id']])) {
+                    $value = $ref[$col['type']][$col['id']]['name'];
+                }
+            } elseif ($col['type'] == 'data' && isset($ref[$col['nameSql']])) {
+                $value = $ref[$col['nameSql']];
+            }
+?>
+        <th><?php echo $value ; ?></th>
+<?php
+        }
+?>
+        <td>
+            <a href="#" class="btn btn-small">Editer</a>
+            <a data-titre="<?php echo $ref['code']; ?>" data-idbloc="<?php echo $ref['id']; ?>" class="btn btn-small supprRef">Supprimer</a>
+        </td>
+    </tr>
+<?php } ?>
 </table>
 <div style="width: 616px;margin-left: -308px;" class="modal fade" id="modRef" tabindex="-1" role="dialog" aria-labelledby="modCrit" aria-hidden="true">
     <div class="modal-header">
@@ -16,6 +42,7 @@
         <h3 id="myModalLabel">Ajout / Édition de références</h3>
     </div>
     <div class="modal-body">
+        <input type="hidden" name="idGabPage" value="<?php echo $this->idGabPage; ?>" />
 <?php
     for ($i = 0; $i < count($this->colonnes); $i++) {
 ?>
@@ -23,18 +50,18 @@
         <legend><?php echo $this->colonnes[$i]['name']; ?></legend>
 <?php
         switch ($this->colonnes[$i]['type']) {
-            case 'crit':
+            case 'criteres':
                 if (empty($this->colonnes[$i]['select'])) {
 ?>
-        <input type="text" name="crit_<?php echo $this->colonnes[$i]['id_critere']; ?>" />
+        <input type="text" name="crit_<?php echo $this->colonnes[$i]['id']; ?>" />
 <?php
                 } else {
 ?>
-        <select name="">
+        <select name="crit_<?php echo $this->colonnes[$i]['id']; ?>">
 <?php
                     foreach ($this->colonnes[$i]['select'] as $opt) {
 ?>
-            <option name="crit_<?php echo $this->colonnes[$i]['id_critere']; ?>" value="<?php echo $opt['id']; ?>"><?php echo $opt['name']; ?></option>
+            <option name="crit_<?php echo $this->colonnes[$i]['id']; ?>" value="<?php echo $opt['id']; ?>"><?php echo $opt['name']; ?></option>
 <?php
                     }
 ?>
@@ -44,11 +71,25 @@
                 break;
             case 'prix':
 ?>
-        <div style="display: block;" class="line tier"><label for="reg_taxe">Taxe</label><input id="reg_taxe" name="reg_taxe_<?php echo $opt['id_region']; ?>" type="text" /></div>
-        <div style="display: block;" class="line tier"><label for="reg_ht">Prix HT</label><input id="reg_ht" name="reg_ht_<?php echo $opt['id_region']; ?>" type="text" /></div>
-        <div style="display: block;" class="line tier"><label for="reg_ttc">Prix TTC</label><input id="reg_ttc" name="reg_ttc_<?php echo $opt['id_region']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_taxe">Taxe</label>
+            <select id="reg_taxe" name="reg_taxe_<?php echo $this->colonnes[$i]['id']; ?>">
+<?php
+                foreach ($this->colonnes[$i]['select'] as $taxe) {
+?>
+                <option value="<?php echo $taxe['valeur']; ?>"><?php echo $taxe['valeur']; ?></option>
+<?php
+                }
+?>
+            </select>
+        </div>
+        <div style="display: block;" class="line tier"><label for="reg_ht">Prix HT</label><input id="reg_ht" name="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ttc">Prix TTC</label><input id="reg_ttc" name="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
 <?php
                 break;
+            default:
+?>
+        <input type="text" name="<?php echo $this->colonnes[$i]['id']; ?>" />
+<?php
         }
 ?>
     </fieldset>
@@ -57,7 +98,7 @@
 ?>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary saveRef btn-small" data-dismiss="modal" aria-hidden="true">Enregistrer la référence</button>
+        <button class="btn btn-primary saveRef btn-small">Enregistrer la référence</button>
     </div>
 </div>
 
@@ -65,11 +106,87 @@
 
 <script type="text/javascript">
     $(function() {
-        $(".saveRef").click(function(){
-            var data = {};
-            $("#modRef input, #modeRef select").each(function(){
-
+        $(".saveRef").click(function(e){
+            e.preventDefault()
+            var data = {}
+                $this = $(this);
+            $("#modRef input").each(function(){
+                data[$(this).attr("name")] = $(this).val();
             });
+
+            $("#modRef select").each(function(){
+                data[$(this).attr("name")] = $(this).val();
+            });
+
+            $.post(
+                "back/produits/savereference.html",
+                data,
+                function(data){
+                    $this.delay(500).queue(function(){
+                        $("body").find(".sticky-queue").html("")
+
+                        if(data.status == "success") {
+                            var message = "La page a été enregistrée avec succès";
+                            if(data.message) {
+                                message = data.message;
+                            }
+                            $.sticky(message, {
+                                type:"success"
+                            });
+                        } else {
+                            var message = "Une erreur est survenue pendant l'enregistrement de la page";
+                            if(data.message) {
+                                message = data.message;
+                            }
+                            $.sticky(message, {
+                                type:"error"
+                            });
+                        }
+                    })
+                },
+                'json'
+            );
+            return false;
         });
-    });
+
+        $(".supprRef").click(function(){
+            confirmSupprCrit($(this));
+            return false;
+        });
+
+    var confirmSupprCrit = function(ref) {
+        var sort_box = ref.parent(),
+            idBloc = ref.data("idbloc"),
+            titleElemDel = ref.attr("data-titre"),
+            heading = 'Confirmation de suppression de référence "' + titleElemDel + '"',
+            question = 'Etes-vous sûr de vouloir supprimer la référance "' + titleElemDel + '" ? ',
+            cancelButtonTxt = 'Annuler',
+            okButtonTxt = 'Confirmer',
+            callback = function() {
+                $.post(
+                    'back/produits/deleteref.html',
+                    {
+                        idBloc : idBloc
+                    },
+                    function(data){
+                        if(data.status == 'success')
+                            ref.parent().parent().slideUp('fast', function(){
+                                $(this).remove();
+                                sort_box.sortable('refresh');
+                                var heading = 'Confirmation de suppression de "' + titleElemDel + '"';
+                                var message = '"' + titleElemDel + '"'
+                                    + ' a été supprimé avec succès'
+                                var closeButtonTxt = 'Fermer';
+                                myModal.message(heading, message, closeButtonTxt, 2500);
+                            })
+                    },
+                    'json'
+                    );
+                };
+
+            myModal.confirm(heading, question, cancelButtonTxt, okButtonTxt, callback);
+
+
+    }
+});
 </script>

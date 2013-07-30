@@ -156,5 +156,206 @@ class Produits extends \App\Back\Controller\Main
 
         $this->_view->datatableRender = $datatable;
     }
+
+
+    /**
+     * Enregistrement d'une référence
+     *
+     * Renvois des informations sur l'exécution de l'enregistrement et
+     * les informations de la référence en vue de son affichage dans le
+     * tableau
+     *
+     * @return void
+     */
+    public function saveReferenceAction()
+    {
+        $this->_view->enable(false);
+
+        if (!isset($_POST['idGabPage']) || empty($_POST['idGabPage'])) {
+
+            return;
+        }
+
+        $idGabPage = (int) $_POST['idGabPage'];
+
+        $query = 'SELECT * '
+               . 'FROM gab_page '
+               . 'WHERE id = ' . $idGabPage . ' ';
+        $gab = $this->_db->query($query)->fetch();
+
+        if (empty($gab)) {
+
+            return;
+        }
+
+        $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+        $config = new \Slrfw\Config($path);
+
+        /** Enregistrement ou édition **/
+        if (isset($_POST['idBloc'])) {
+            $idBloc = $_POST['idBloc'];
+        } else {
+            $query = 'INSERT INTO ' . $config->get('table', 'reference') . ' '
+                   . 'SET id_version = ' . BACK_ID_VERSION . ', '
+                   . ' id_gab_page = ' . $idGabPage . ' ';
+            $this->_db->exec($query);
+            $idBloc = $this->_db->lastInsertId();
+        }
+
+        /** Enregistrement des modifications de la table référence **/
+        $query = 'DESC ' . $config->get('table', 'reference') . ' ';
+        $col = $this->_db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $update = array();
+        foreach ($col as $val) {
+            if (!isset($_POST[$val])) {
+                continue;
+            }
+            $update[] = $val . ' = ' . $this->_db->quote($_POST[$val]);
+        }
+
+        if (!empty($update)) {
+            $query = 'UPDATE ' . $config->get('table', 'reference') . ' SET '
+                   . implode(', ', $update) . ' '
+                   . 'WHERE id = ' . $idBloc . ' ';
+            $this->_db->query($query);
+        }
+
+        /** Enregistrement des critères **/
+        $query = 'SELECT * '
+               . 'FROM ' . $config->get('table', 'produitCritere') . ' proCrit '
+               . 'INNER JOIN ' . $config->get('table', 'critere') . ' c '
+               . ' ON c.id = proCrit.id_critere '
+               . 'WHERE proCrit.id_gab_page = ' . $idGabPage . ' '
+               . ' AND proCrit.suppr = 0 ';
+        $criteres = $this->_db->query($query)->fetchAll();
+
+        $idsCritere = array();
+        foreach ($criteres as $critere) {
+            if (!isset($_POST['crit_' . $critere['id_critere']])
+                || empty($_POST['crit_' . $critere['id_critere']])) {
+                continue;
+            }
+            $idsCritere[] = $critere['id_critere'];
+
+            $val = $_POST['crit_' . $critere['id_critere']];
+            if ((string) $val == (string) (int) $val) {
+                $idVal = (int) $val;
+            } else {
+                $query = 'SELECT id '
+                       . 'FROM ' . $config->get('table', 'critereOption') . ' '
+                       . 'WHERE id_critere = ' . $critere['id_critere'] . ' '
+                       . ' AND name LIKE ' . $this->_db->quote($val) . ' ';
+                $idVal = $this->_db->query($query)->fetchColumn();
+                if (empty($idVal)) {
+                    $query = 'INSERT INTO ' . $config->get('table', 'critereOption') . ' '
+                           . 'SET id_critere = ' . $critere['id_critere'] . ', '
+                           . ' name = ' . $this->_db->quote($val) . ' ';
+                    $this->_db->exec($query);
+                    $idVal = $this->_db->lastInsertId();
+                }
+            }
+
+            $query = 'INSERT INTO ' . $config->get('table', 'referenceCritere') . ' '
+                   . 'SET id_bloc = ' . $idBloc . ', '
+                   . '  id_critere = ' . $critere['id_critere'] . ', '
+                   . '  id_critere_option = ' . $idVal . ' ';
+            $this->_db->exec($query);
+        }
+        if (empty($idsCritere)) {
+            $idsCritere[] = $this->_db->quote('toto');
+        }
+        $query = 'UPDATE ' . $config->get('table', 'referenceCritere') . ' '
+               . 'SET suppr = NOW() '
+               . 'WHERE id_critere NOT IN (' . implode(', ', $idsCritere) . ') '
+               . ' AND id_bloc = ' . $idBloc . ' ';
+        $this->_db->exec($query);
+
+
+
+        $query = 'SELECT * '
+               . 'FROM ' . $config->get('table', 'produitRegion') . ' proReg '
+               . 'INNER JOIN ' . $config->get('table', 'region') . ' r '
+               . ' ON r.id = proReg.id_region '
+               . 'WHERE proReg.id_gab_page = ' . $idGabPage . ' '
+               . ' AND proReg.suppr = 0 ';
+        $regions = $this->_db->query($query)->fetchAll();
+
+        $idsRegion = array();
+        foreach ($regions as $region) {
+            if (!isset($_POST['reg_taxe_' . $region['id_region']])) {
+                continue;
+            }
+
+            $idsRegion[] = $region['id_region'];
+
+            $val = $_POST['crit_' . $critere['id_critere']];
+
+            $taxeId = $_POST['reg_taxe_' . $region['id_region']];
+            $prixTTC = (float) $_POST['reg_ttc_' . $region['id_region']];
+            $prixHT = (float) $_POST['reg_ht_' . $region['id_region']];
+
+            $query = 'INSERT INTO ' . $config->get('table', 'referenceRegion') . ' '
+                   . 'SET id_bloc = ' . $idBloc . ', '
+                   . '  id_region = ' . $critere['id_critere'] . ', '
+                   . '  id_taxe = ' . $this->_db->quote($taxeId) . ', '
+                   . '  prix_ttc = ' . $prixTTC . ', '
+                   . '  prix_ht = ' . $prixHT . ' ';
+            $this->_db->exec($query);
+        }
+        if (empty($idsRegion)) {
+            $idsRegion[] = $this->_db->quote('toto');
+        }
+        $query = 'UPDATE ' . $config->get('table', 'referenceRegion') . ' '
+               . 'SET suppr = NOW() '
+               . 'WHERE id_region NOT IN (' . implode(', ', $idsRegion) . ') '
+               . ' AND id_bloc = ' . $idBloc . ' ';
+        $this->_db->exec($query);
+
+
+        $hook = new \Slrfw\Hook();
+        $hook->idGabPage = $idGabPage;
+        $hook->data = $_POST;
+
+        $hook->exec('referenceSave');
+    }
+
+    /**
+     * Suppression d'une référence
+     *
+     * @return void
+     */
+    public function deleteRefAction()
+    {
+        $this->_view->enable(false);
+
+        if (!isset($_POST['idBloc'])) {
+            return;
+        }
+
+        $idBloc = (int) $_POST['idBloc'];
+
+        $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+        $config = new \Slrfw\Config($path);
+
+        $tables = array('referenceCritere', 'referenceRegion');
+
+        foreach ($tables as $table) {
+            $query = 'UPDATE ' . $config->get('table', $table) . ' SET '
+                   . ' suppr = NOW() '
+                   . 'WHERE id_bloc = ' . $idBloc . ' ';
+            $this->_db->exec($query);
+        }
+
+        $query = 'UPDATE ' . $config->get('table', 'reference') . ' SET '
+               . ' suppr = NOW() '
+               . 'WHERE id = ' . $idBloc . ' ';
+        $this->_db->exec($query);
+
+        $return = array(
+            'status' => 'success',
+        );
+
+        echo json_encode($return);
+    }
 }
 
