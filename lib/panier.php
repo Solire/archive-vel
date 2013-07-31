@@ -85,21 +85,25 @@ class Panier
 
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $this->config = new \Slrfw\Config($path);
+        unset($path);
 
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $this->tableConf = new \Slrfw\Config($path);
+        unset($path);
 
         $this->db = \Slrfw\Registry::get('db');
         $cookieName = $this->config->get('session', 'cookieName');
         if (isset($_COOKIE[$cookieName])) {
-            $query = 'SELECT id FROM ' . $this->tableConf->get('table', 'panier')
-                   . ' WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
+            $query = 'SELECT id, id_region '
+                   . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
+                   . 'WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
             $panier = $this->db->query($query)->fetch();
             if (empty($panier)) {
                 $this->create();
                 return null;
             }
             $this->id = $panier['id'];
+            $this->idRegion = $panier['id_region'];
         } else {
             $this->create();
         }
