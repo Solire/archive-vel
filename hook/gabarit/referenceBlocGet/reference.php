@@ -67,6 +67,6 @@ class Reference implements \Slrfw\HookInterface
             }
         }
         $env->values = $values;
-    }
+     }
 }
 

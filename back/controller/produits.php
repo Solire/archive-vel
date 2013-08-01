@@ -192,7 +192,7 @@ class Produits extends \App\Back\Controller\Main
         $config = new \Slrfw\Config($path);
 
         /** Enregistrement ou édition **/
-        if (isset($_POST['idBloc'])) {
+        if (isset($_POST['idBloc']) && !empty($_POST['idBloc'])) {
             $idBloc = $_POST['idBloc'];
         } else {
             $query = 'INSERT INTO ' . $config->get('table', 'reference') . ' '

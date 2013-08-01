@@ -30,7 +30,7 @@
         }
 ?>
         <td>
-            <a href="#" class="btn btn-small">Editer</a>
+            <a data-toggle="modal" href="#modRef" class="btn btn-small editRef" data-ref='<?php echo json_encode($ref); ?>'>Editer</a>
             <a data-titre="<?php echo $ref['code']; ?>" data-idbloc="<?php echo $ref['id']; ?>" class="btn btn-small supprRef">Supprimer</a>
         </td>
     </tr>
@@ -43,6 +43,7 @@
     </div>
     <div class="modal-body">
         <input type="hidden" name="idGabPage" value="<?php echo $this->idGabPage; ?>" />
+        <input type="hidden" name="idBloc" value="" />
 <?php
     for ($i = 0; $i < count($this->colonnes); $i++) {
 ?>
@@ -106,6 +107,22 @@
 
 <script type="text/javascript">
     $(function() {
+        /* = Lors de l'ajout d'une reférence on vide les champs présents
+        `------------------------------------------------- */
+        $(".addRef").click(function(){
+            $("#modRef input").val("");
+        });
+
+        $("a.editRef").click(function(){
+            var data = $(this).data("ref")
+                mod = $("#modRef");
+
+            $("input[name=idBloc]").val(data.id);
+            $("input[name=code]").val(data.code);
+            $("input[name=ean]").val(data.ean);
+        });
+
+
         $(".saveRef").click(function(e){
             e.preventDefault()
             var data = {}
