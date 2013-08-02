@@ -232,7 +232,9 @@ class Panier
           ------------------------------- */
         $query = 'SELECT ' . implode(', ', $info) . ' '
                . 'FROM ' . $this->tableConf->get('table', 'reference') . ' '
-               . 'WHERE id = ' . $idRef;
+               . 'WHERE id = ' . $idRef . ' '
+               . ' AND suppr = 0 '
+               . ' AND visible = 1 ';
         try {
             $ref = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $exc) {
@@ -448,10 +450,19 @@ class Panier
      */
     public function getInfo()
     {
-        $query = 'SELECT * '
-               . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
-               . 'WHERE id_panier = ' . $this->id;
+        $query = 'SELECT pl.*, gp.titre nom '
+               . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' pl '
+               . 'INNER JOIN ' . $this->tableConf->get('table', 'reference') . ' r '
+               . ' ON r.id = pl.id_reference '
+               . 'INNER JOIN gab_page gp '
+               . ' ON gp.id = r.id_gab_page '
+               . 'WHERE pl.id_panier = ' . $this->id;
         $lignes = $this->db->query($query)->fetchAll();
+
+        for ($i = 0; $i < count($lignes); $i++) {
+            $lignes[$i]['prixTotal'] = $lignes[$i]['prix_ttc'] * $lignes[$i]['quantite'];
+        }
+
         $lignes['total'] = $this->getTotal();
         $lignes['prix'] = $this->getPrix();
         $lignes['prixHT'] = $this->getHT();

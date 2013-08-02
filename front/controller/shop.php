@@ -11,6 +11,8 @@
 
 namespace Vel\Front\Controller;
 
+use \Slrfw\Format\Number;
+
 /**
  * Fonctionnalités de vente en ligne
  *
@@ -29,6 +31,12 @@ class Shop extends \Vel\Front\Controller\Main
     private $panier;
 
     /**
+     *
+     * @var \Slrfw\Config
+     */
+    private $config;
+
+    /**
      * Suppression du référencement
      *
      * @return void
@@ -40,6 +48,9 @@ class Shop extends \Vel\Front\Controller\Main
 		$this->_view->gindex = 'no';
 		$this->_view->gfollow = 'no';
 
+        $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+        $this->config = new \Slrfw\Config($path);
+        unset($path);
 
 	}
 
@@ -83,9 +94,9 @@ class Shop extends \Vel\Front\Controller\Main
 
         $message = new Message("");
         $price = $ref['prix'] * ( 1 - ($ref['taux_remise'] / 100));
-        $message->prix = \Slrfw\Format\Number::formatMoney($price);
+        $message->prix = Number::money($price);
         $message->promotion = $ref['taux_remise'];
-        $message->prixFix = \Slrfw\Format\Number::formatMoney($ref['prix']);
+        $message->prixFix = Number::money($ref['prix']);
         $message->display();
     }
 
@@ -96,6 +107,7 @@ class Shop extends \Vel\Front\Controller\Main
      */
     public function ajoutProduitAction()
     {
+        $this->_view->enable(false);
         $archi = array(
             'produit' => array(
                 'test' => 'notEmpty|isInt',
@@ -116,11 +128,22 @@ class Shop extends \Vel\Front\Controller\Main
 
         $panier->ajoute($produit, $qte);
 
+        /** Chargement du nom produit **/
+        $query = 'SELECT titre '
+               . 'FROM ' . $this->config->get('table', 'reference') . ' r '
+               . 'INNER JOIN gab_page gp '
+               . ' ON gp.id = r.id_gab_page '
+               . 'WHERE r.id = ' . $produit . ' '
+               . ' AND r.suppr = 0 '
+               . ' AND r.visible = 1 ';
+        $dataProd = $this->_db->query($query)->fetch(\PDO::FETCH_ASSOC);
+
         $message = new \Slrfw\Message('Produit ajouté au panier');
-        $message->total = \Slrfw\Format\Number::formatMoney($panier->getPrix());
+        $message->total = Number::money($panier->getPrix(), true, '€');
+        $message->nom = $dataProd['titre'];
         $message->produitQte = $panier->getNombre($produit);
-        $message->produitPrix = \Slrfw\Format\Number::formatMoney($panier->getPrix($produit));
-        $message->port = \Slrfw\Format\Number::formatMoney($panier->getPort());
+        $message->produitPrix = Number::money($panier->getPrix($produit), true, '€');
+        $message->port = Number::money($panier->getPort(), true, '€');
         $message->nbProduits = $panier->getNombre();
         $message->display();
     }
@@ -149,10 +172,10 @@ class Shop extends \Vel\Front\Controller\Main
         $panier->supprime($data['id']);
 
         $message = new Message('Produit supprimé du panier');
-        $message->prix = \Slrfw\Format\Number::formatMoney($panier->getPrix());
+        $message->prix = \Slrfw\Format\Number::money($panier->getPrix());
         $message->nbProduits = $panier->getNombre();
-        $message->port = \Slrfw\Format\Number::formatMoney($panier->getPort());
-        $message->total = \Slrfw\Format\Number::formatMoney($panier->getTotal());
+        $message->port = \Slrfw\Format\Number::money($panier->getPort());
+        $message->total = \Slrfw\Format\Number::money($panier->getTotal());
         $message->addRedirect("shop/panier.html", 3);
         $message->display();
     }
