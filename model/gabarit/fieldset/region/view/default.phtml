@@ -17,6 +17,9 @@
         foreach ($this->regions as $idRegion => $region) {
             $regionCheck = false;
             foreach ($select as $key => $value) {
+                if (empty($value)) {
+                    continue;
+                }
                 if ($value['id_region'] == $idRegion) {
                     $regionCheck = true;
                     unset($select[$key]);
