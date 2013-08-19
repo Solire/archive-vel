@@ -150,8 +150,6 @@ class Shop extends \Vel\Front\Controller\Main
 
     /**
      * Supprime un produit du panier
-     * @uses Formulaire
-     * @uses Panier::supprime()
      *
      * @return void
      */
@@ -162,7 +160,7 @@ class Shop extends \Vel\Front\Controller\Main
             'id' => array(
                 'test' => 'notEmpty|isInt',
                 'obligatoire' => true,
-                'exception' => 'LibException'
+                'exception' => '\Slrfw\Exception\Lib'
             )
         );
         $formulaire = new \Slrfw\Formulaire($form);
@@ -171,11 +169,10 @@ class Shop extends \Vel\Front\Controller\Main
         $panier = $this->loadPanier();
         $panier->supprime($data['id']);
 
-        $message = new Message('Produit supprimé du panier');
-        $message->prix = \Slrfw\Format\Number::money($panier->getPrix());
+        $message = new \Slrfw\Message('Produit supprimé du panier');
         $message->nbProduits = $panier->getNombre();
-        $message->port = \Slrfw\Format\Number::money($panier->getPort());
-        $message->total = \Slrfw\Format\Number::money($panier->getTotal());
+        $message->port = Number::money($panier->getPort(), true, '€');
+        $message->total = Number::money($panier->getPrix(), true, '€');
         $message->addRedirect("shop/panier.html", 3);
         $message->display();
     }
@@ -242,7 +239,7 @@ class Shop extends \Vel\Front\Controller\Main
 
         /** Chargement des données **/
         $form = $this->chargeForm('passercommande.form.ini');
-        list($livraison, $mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+        list($mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
         $hook->form = $form->getArray();
         unset($form);
 
@@ -253,7 +250,7 @@ class Shop extends \Vel\Front\Controller\Main
             throw new \Slrfw\Exception\User('Aucun Panier en cours');
         }
 
-        $hook->exec('control');
+        $hook->exec('controle');
 
         $className = \Slrfw\FrontController::searchClass('Lib\Commande', false);
         $commande = new $className();

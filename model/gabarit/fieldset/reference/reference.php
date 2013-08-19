@@ -36,8 +36,15 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
     {
         $db = \Slrfw\Registry::get('db');
 
+        if ($this->idGabPage === 0) {
+            $this->display = false;
+            return;
+        }
+
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $config = new \Slrfw\Config($path);
+
+        $this->idPrixHt = $config->get('champ', 'prixHt');
 
         $this->colonnes = array();
         $this->colonnes[] = array(
@@ -93,6 +100,12 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
                . 'WHERE reg.id_gab_page = ' . $this->idGabPage . ' '
                . ' AND reg.suppr = 0 ';
         $this->regions = $db->query($query)->fetchAll();
+
+        if (empty($this->regions)) {
+            $this->display = false;
+            return;
+        }
+
         foreach ($this->regions as $region) {
             $query = 'SELECT * '
                    . 'FROM ' . $config->get('table', 'regionTaxe') . ' '

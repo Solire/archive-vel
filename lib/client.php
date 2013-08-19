@@ -185,6 +185,8 @@ class Client
             }
         }
 
+        $this->addAdress($data);
+
         return $this->id;
     }
 
@@ -259,11 +261,10 @@ class Client
      */
     public function addAdress($data)
     {
-        $query = 'DESC ' . $this->config('adresse', 'table');
-        $archi = $this->db->query($query)->fetchAll(PDO::FETCH_COLUMN, 0);
+        $query = 'DESC ' . $this->config('table', 'adresse');
+        $archi = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
 
-        $data[$this->config('lienAdresseClient', 'table')] = $this->id;
-
+        $data[$this->config('table', 'lienAdresseClient')] = $this->id;
         $set = array();
         foreach ($data as $key => $value) {
             if (in_array($key, $archi)) {
@@ -272,18 +273,14 @@ class Client
         }
 
         if (empty($set)) {
-            throw new \Slrfw\Exception\Lib($this->config('insertAdresseNoData', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'insertAdresseNoData'));
             return false;
         }
 
-        $insert = 'INSERT INTO ' . $this->config('adresse', 'table') . ' '
+        $insert = 'INSERT INTO ' . $this->config('table', 'adresse') . ' '
                 . 'SET ' . implode(', ', $set);
 
-        try {
-            $this->db->exec($insert);
-        } catch (\PDOException $exc) {
-            throw new \Slrfw\Exception\Lib($this->config('insertAdresseSql', 'erreur'));
-        }
+        $this->db->exec($insert);
 
         return $this->db->lastInsertId();
     }
@@ -416,16 +413,9 @@ class Client
         $info = $this->convertionBit($info, $champs);
 
         $query = 'SELECT * '
-               . 'FROM '  . $this->config('adresse', 'table') . ' a '
-               . 'WHERE id_client = ' . $this->id;
+               . 'FROM '  . $this->config('table', 'adresse') . ' a '
+               . 'WHERE client_id = ' . $this->id;
         $info['adresses'] = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-
-        foreach ($info['adresses'] as $adresse) {
-            if ($adresse['principal'] == 1) {
-                $info['adressePrincipale'] = $adresse;
-                break;
-            }
-        }
 
         $this->setInfo($info);
 

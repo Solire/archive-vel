@@ -287,10 +287,8 @@ class Panier
      */
     protected function chargePrix($idRef)
     {
-        $query = 'SELECT prix_ttc, prix_ht, valeur taxe '
+        $query = 'SELECT prix_ttc, prix_ht, taxe '
                . 'FROM ' . $this->tableConf->get('table', 'referenceRegion') . ' rr '
-               . 'INNER JOIN ' . $this->tableConf->get('table', 'regionTaxe') . ' t '
-               . ' ON t.id = rr.id_taxe '
                . 'WHERE rr.id_bloc = ' . $idRef . ' '
                . ' AND rr.id_region = ' . $this->idRegion . ' ';
         $prices = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);

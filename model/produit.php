@@ -21,6 +21,7 @@ namespace Vel\Model;
 class Produit extends \Slrfw\Model\GabaritPage
 {
     /**
+     * Renvois le prix de la référence
      *
      * @param type $idRef
      * @param type $idRegion
@@ -64,6 +65,10 @@ class Produit extends \Slrfw\Model\GabaritPage
             return null;
         }
         $firstRef = $references->getValues();
+
+        if (!isset($firstRef[0]['id'])) {
+            return null;
+        }
 
         return $firstRef[0]['id'];
     }

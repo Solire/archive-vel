@@ -1,9 +1,10 @@
 <?php
-    if (!empty($this->regions)) {
-
+    $style = '';
+    if (count($this->regions) == 1) {
+        $style = ' style="display:none;"';
     }
 ?>
-<fieldset>
+<fieldset<?php echo $style; ?>>
     <legend><?php echo $this->gabarit->getLabel(); ?></legend>
 
     <div style="display:none;" class="sort-box">
@@ -25,6 +26,9 @@
                     unset($select[$key]);
                     break;
                 }
+            }
+            if (count($this->regions) == 1) {
+                $regionCheck = true;
             }
 ?>
                     <div class="line tier">

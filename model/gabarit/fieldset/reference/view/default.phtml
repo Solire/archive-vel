@@ -11,6 +11,9 @@
     </tr>
 <?php
     foreach ($this->values as $ref) {
+        if (empty($ref)) {
+            continue;
+        }
 ?>
     <tr>
 <?php
@@ -72,6 +75,7 @@
                 break;
             case 'prix':
 ?>
+        <div class='region'>
         <div style="display: block;" class="line tier"><label for="reg_taxe">Taxe</label>
             <select id="reg_taxe" name="reg_taxe_<?php echo $this->colonnes[$i]['id']; ?>">
 <?php
@@ -83,8 +87,9 @@
 ?>
             </select>
         </div>
-        <div style="display: block;" class="line tier"><label for="reg_ht">Prix HT</label><input id="reg_ht" name="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
-        <div style="display: block;" class="line tier"><label for="reg_ttc">Prix TTC</label><input id="reg_ttc" name="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>">Prix HT</label><input id="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" name="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>">Prix TTC</label><input id="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" name="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        </div>
 <?php
                 break;
             default:
@@ -107,10 +112,36 @@
 
 <script type="text/javascript">
     $(function() {
+
+        /* = Calcul du prix TTC en fonction du prix HT renseigné et de la taxe choisie
+        `------------------------------------------------- */
+        var calcPrices = function() {
+            $("#modRef div.region").each(function(){
+                var taxe = parseFloat($("select[name^=reg_taxe_]", $(this)).val()) / 100,
+                    prixHt = parseFloat($("input[name^=reg_ht_]", $(this)).val()),
+                    prixTTC = 0;
+
+                prixTTC = prixHt + taxe * prixHt;
+                $("input[name^=reg_ttc_]", $(this)).val(prixTTC.toFixed(2));
+            });
+        };
         /* = Lors de l'ajout d'une reférence on vide les champs présents
         `------------------------------------------------- */
         $(".addRef").click(function(){
-            $("#modRef input").val("");
+            $("#modRef input").each(function(){
+                if ($(this).attr("name") == 'idGabPage' || $(this).attr("name") == 'idBloc') {
+                    return;
+                }
+                $(this).val("");
+            });
+
+            /* = Récupération du prix HT par "défaut"
+            `------------------------------------------------- */
+            var prixHt = $("input[name^=champ<?php echo $this->idPrixHt; ?>]").val();
+            if (prixHt != "") {
+                $("#modRef input[name^=reg_ht_]").val(prixHt);
+            }
+            calcPrices();
         });
 
         $("a.editRef").click(function(){
@@ -120,6 +151,24 @@
             $("input[name=idBloc]").val(data.id);
             $("input[name=code]").val(data.code);
             $("input[name=ean]").val(data.ean);
+
+            $.each(data.criteres, function(key, value){
+                if ($("select[name=crit_" + value.id_critere + "]").length == 1) {
+                    $("select[name=crit_" + value.id_critere + "]").val(value.id_critere_option);
+                } else {
+                    $("input[name=crit_" + value.id_critere + "]").val(value.name);
+                }
+            });
+
+            $.each(data.prix, function(key, value){
+                $("select[name=reg_taxe_" + value.id_region + "]").val(value.taxe);
+                $("input[name=reg_ht_" + value.id_region + "]").val(value.prix_ht);
+                $("input[name=reg_ttc_" + value.id_region + "]").val(value.prix_ttc);
+            });
+
+            $("#modRef select").each(function(){
+                data[$(this).attr("name")] = $(this).val();
+            });
         });
 
 
@@ -169,6 +218,12 @@
         $(".supprRef").click(function(){
             confirmSupprCrit($(this));
             return false;
+        });
+
+        /* = Calcul du prix TTC après un changement de taxe
+        `------------------------------------------------- */
+        $("#modRef select[name^=reg_taxe_]").change(function(){
+            calcPrices();
         });
 
     var confirmSupprCrit = function(ref) {

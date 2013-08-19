@@ -172,7 +172,10 @@ class Produits extends \App\Back\Controller\Main
         $this->_view->enable(false);
 
         if (!isset($_POST['idGabPage']) || empty($_POST['idGabPage'])) {
-
+            $data = array(
+                'message' => 'idGabPage vide',
+            );
+            $this->sendError($data);
             return;
         }
 
@@ -184,7 +187,10 @@ class Produits extends \App\Back\Controller\Main
         $gab = $this->_db->query($query)->fetch();
 
         if (empty($gab)) {
-
+            $data = array(
+                'message' => 'Aucun gabarit pour cet id',
+            );
+            $this->sendError();
             return;
         }
 
@@ -197,7 +203,8 @@ class Produits extends \App\Back\Controller\Main
         } else {
             $query = 'INSERT INTO ' . $config->get('table', 'reference') . ' '
                    . 'SET id_version = ' . BACK_ID_VERSION . ', '
-                   . ' id_gab_page = ' . $idGabPage . ' ';
+                   . ' id_gab_page = ' . $idGabPage . ', '
+                   . ' visible = 1 ';
             $this->_db->exec($query);
             $idBloc = $this->_db->lastInsertId();
         }
@@ -258,7 +265,9 @@ class Produits extends \App\Back\Controller\Main
             $query = 'INSERT INTO ' . $config->get('table', 'referenceCritere') . ' '
                    . 'SET id_bloc = ' . $idBloc . ', '
                    . '  id_critere = ' . $critere['id_critere'] . ', '
-                   . '  id_critere_option = ' . $idVal . ' ';
+                   . '  id_critere_option = ' . $idVal . ' '
+                   . 'ON DUPLICATE KEY UPDATE id_critere_option = ' . $idVal . ', '
+                   . ' suppr = "0000-00-00 00:00:00" ';
             $this->_db->exec($query);
         }
         if (empty($idsCritere)) {
@@ -288,18 +297,20 @@ class Produits extends \App\Back\Controller\Main
 
             $idsRegion[] = $region['id_region'];
 
-            $val = $_POST['crit_' . $critere['id_critere']];
-
             $taxeId = $_POST['reg_taxe_' . $region['id_region']];
             $prixTTC = (float) $_POST['reg_ttc_' . $region['id_region']];
             $prixHT = (float) $_POST['reg_ht_' . $region['id_region']];
 
             $query = 'INSERT INTO ' . $config->get('table', 'referenceRegion') . ' '
                    . 'SET id_bloc = ' . $idBloc . ', '
-                   . '  id_region = ' . $critere['id_critere'] . ', '
-                   . '  id_taxe = ' . $this->_db->quote($taxeId) . ', '
+                   . '  id_region = ' . $region['id_region'] . ', '
+                   . '  taxe = ' . $this->_db->quote($taxeId) . ', '
                    . '  prix_ttc = ' . $prixTTC . ', '
-                   . '  prix_ht = ' . $prixHT . ' ';
+                   . '  prix_ht = ' . $prixHT . ' '
+                   . 'ON DUPLICATE KEY UPDATE taxe = ' . $this->_db->quote($taxeId) . ', '
+                   . '  prix_ttc = ' . $prixTTC . ', '
+                   . '  prix_ht = ' . $prixHT . ', '
+                   . ' suppr = "0000-00-00 00:00:00" ';;
             $this->_db->exec($query);
         }
         if (empty($idsRegion)) {
@@ -317,6 +328,8 @@ class Produits extends \App\Back\Controller\Main
         $hook->data = $_POST;
 
         $hook->exec('referenceSave');
+
+        $this->sendSuccess();
     }
 
     /**
@@ -351,11 +364,7 @@ class Produits extends \App\Back\Controller\Main
                . 'WHERE id = ' . $idBloc . ' ';
         $this->_db->exec($query);
 
-        $return = array(
-            'status' => 'success',
-        );
-
-        echo json_encode($return);
+        $this->sendSuccess();
     }
 }
 
