@@ -28,7 +28,7 @@
                                     <li class="dropdown<?php echo $this->controller == "back/commande" ? ' gradient-blue text-light-white' : ''; ?>">
                                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Commande <b class="caret"></b></a>
                                         <ul class="dropdown-menu">
-                                            <li class="<?php ?>"><a href="back/commande/encours.html"> En cours (2)</a></li>
+                                            <li class="<?php ?>"><a href="back/commande/encours.html"> En cours (<?php echo $this->countCmd; ?>)</a></li>
                                             <li class="<?php ?>"><a href="back/commande/traite.html"> Traités</a></li>
                                             <li class="<?php ?>"><a href="back/page/liste.html?"> Stats</a></li>
                                         </ul>
