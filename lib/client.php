@@ -410,7 +410,6 @@ class Client
                . 'WHERE id = ' . $this->id;
         $info = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
         $champs = array('actif');
-        $info = $this->convertionBit($info, $champs);
 
         $query = 'SELECT * '
                . 'FROM '  . $this->config('table', 'adresse') . ' a '

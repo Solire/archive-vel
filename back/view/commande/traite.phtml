@@ -1,5 +1,4 @@
-<table id="comm" style="width:90%">
-    <thead>
+<table>
     <tr>
        <th>Référence</th>
        <th>Etat</th>
@@ -8,10 +7,7 @@
        <th>Prix HT</th>
        <th>Prix TTC</th>
        <th></th>
-       <th></th>
     </tr>
-    </thead>
-    <tbody>
 <?php
     if (isset($this->list) && !empty($this->list)) {
         foreach ($this->list as $cmd) {
@@ -24,23 +20,9 @@
         <td><?php echo $cmd['total_ht']; ?></td>
         <td><?php echo $cmd['total_ttc']; ?></td>
         <td><a href="back/commande/voir.html?id=<?php echo $cmd['id']; ?>">Voir</a></td>
-        <td style="position:absolute;">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Traiter <b class="caret"></b></a>
-            <ul class="dropdown-menu" style="position:absolute;">
-                <li class="<?php ?>"><a href="back/commande/evol.html?id=<?php echo $cmd['id']; ?>&etape=expedie">Expédier</a></li>
-                <li class="<?php ?>"><a href="back/commande/evol.html?id=<?php echo $cmd['id']; ?>&etape=annule&code=enregistrement">Annuler</a></li>
-            </ul>
-        </td>
     </tr>
 <?php
         }
     }
 ?>
-    </tbody>
 </table>
-
-<script type="text/javascript">
-$(document).ready(function() {
-	$('#comm').dataTable();
-});
-</script>
