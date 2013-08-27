@@ -4,10 +4,10 @@
  *
  * Ce bloc permet de choisir les régions dans lesquelles sera vendu le produit
  *
- * @package    Gabarit
- * @subpackage fieldset
+ * @package    Vel
+ * @subpackage Gabarit
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 namespace Vel\Model\Gabarit\Fieldset\Region;
@@ -17,10 +17,10 @@ namespace Vel\Model\Gabarit\Fieldset\Region;
  *
  * Ce bloc permet de choisir les régions dans lesquelles sera vendu le produit
  *
- * @package    Gabarit
- * @subpackage fieldset
+ * @package    Vel
+ * @subpackage Gabarit
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 class Region extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
 {

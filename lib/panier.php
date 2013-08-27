@@ -70,11 +70,10 @@ class Panier
     /**
      * utiliser init() ou run() pour instancier panier
      *
-     * @param int|null $id Identifiant du panier
-     *
      * @return void
      * @uses \Slrfw\Config pour charger la configuration
-     * @uses \Slrfw\Registry
+     * @uses \Slrfw\Registry récupération de la bdd
+     * @uses \Slrfw\FrontController recherche de fichiers .ini
      */
     public function __construct()
     {
@@ -203,6 +202,15 @@ class Panier
         }
     }
 
+    /**
+     * Enregistrement d'un nouveau produit
+     *
+     * @param int $idRef identifiant de la référence
+     * @param int $qte   quantité du produit à ajouter
+     *
+     * @return string requête sql pour l'insertion
+     * @throws \Slrfw\Exception\Lib
+     */
     protected function enregistreNouveauProduit($idRef, $qte)
     {
         $info = array();

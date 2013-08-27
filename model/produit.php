@@ -23,8 +23,8 @@ class Produit extends \Slrfw\Model\GabaritPage
     /**
      * Renvois le prix de la référence
      *
-     * @param type $idRef
-     * @param type $idRegion
+     * @param int $idRef    Identifiant de la référence du produit
+     * @param int $idRegion Identifiant de la région dans laquelle on veut le prix
      *
      * @return float prix de la référence
      */

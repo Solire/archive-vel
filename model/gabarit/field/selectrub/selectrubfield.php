@@ -1,6 +1,6 @@
 <?php
 /**
- *
+ * Selecteur de rubrique
  *
  * @package    Vel
  * @subpackage Gabarit
@@ -11,7 +11,7 @@
 namespace Vel\Model\Gabarit\Field\SelectRub;
 
 /**
- *
+ * Selecteur de rubrique
  *
  * @package    Vel
  * @subpackage Gabarit
@@ -22,6 +22,7 @@ namespace Vel\Model\Gabarit\Field\SelectRub;
 class SelectRubField extends \Slrfw\Model\Gabarit\Field\GabaritField
 {
     /**
+     * Affichage du select
      *
      * @return void
      */
