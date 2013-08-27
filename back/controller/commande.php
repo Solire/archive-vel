@@ -105,7 +105,6 @@ class Commande extends \App\Back\Controller\Main
      */
     public function traiteAction()
     {
-
         $commandeClass = \Slrfw\FrontController::searchClass('Lib\Commande');
         $commande = new $commandeClass;
         unset($commandeClass);
@@ -119,6 +118,29 @@ class Commande extends \App\Back\Controller\Main
 
             $this->_view->list[$key]['client'] = $foo->getInfo();
         }
+    }
+
+    /**
+     * Affiche le détail d'une commande
+     *
+     * @return void
+     */
+    public function voirAction()
+    {
+        if (!isset($_GET['id']) || empty($_GET['id'])) {
+            return;
+        }
+
+        $idCommande = $_GET['id'];
+
+        $commandeClass = \Slrfw\FrontController::searchClass('Lib\Commande');
+        $commande = new $commandeClass;
+        unset($commandeClass);
+
+        $commande->set($idCommande);
+
+        $this->_view->commande = $commande->getInfo($this->_gabaritManager);
+        echo '<pre>' . print_r($this->_view->commande, true) . '</pre>';
     }
 }
 
