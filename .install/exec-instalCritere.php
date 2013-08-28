@@ -8,20 +8,18 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-set_include_path(
-    get_include_path()
-    . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
-);
+if (!defined('MULTIPLE')) {
+    set_include_path(
+        get_include_path()
+        . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
+    );
 
-require 'slrfw/init.php';
+    include 'slrfw/init.php';
 
-\Slrfw\FrontController::setApp('projet');
-\Slrfw\FrontController::setApp('vel');
-\Slrfw\FrontController::setApp('app');
+    \Slrfw\FrontController::init();
 
-\Slrfw\FrontController::init();
-
-$db = \Slrfw\Registry::get('db');
+    $db = \Slrfw\Registry::get('db');
+}
 
 /** Mettre script d'installation ici  **/
 

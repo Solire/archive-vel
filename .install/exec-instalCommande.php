@@ -8,16 +8,18 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-set_include_path(
-    get_include_path()
-    . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
-);
+if (!defined('MULTIPLE')) {
+    set_include_path(
+        get_include_path()
+        . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
+    );
 
-require 'slrfw/init.php';
+    include 'slrfw/init.php';
 
-\Slrfw\FrontController::init();
+    \Slrfw\FrontController::init();
 
-$db = \Slrfw\Registry::get('db');
+    $db = \Slrfw\Registry::get('db');
+}
 
 /** Mettre script d'installation ici  **/
 
@@ -53,17 +55,15 @@ $query = 'CREATE TABLE IF NOT EXISTS `boutique_ligne` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_commande` int(11) NOT NULL,
   `id_reference` int(11) NOT NULL,
-  `prix` float(12,4) NOT NULL,
-  `taux_tva` float(4,2) NOT NULL,
-  `taux_remise` float(4,2) NOT NULL,
-  `devise` tinyint(4) NOT NULL DEFAULT "1",
   `quantite` int(11) NOT NULL,
+  `prix_ht` float NOT NULL,
+  `prix_ttc` float NOT NULL,
+  `taxe` float NOT NULL,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `id_commande` (`id_commande`),
   KEY `id_reference` (`id_reference`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-';
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 
 $db->exec($query);
 

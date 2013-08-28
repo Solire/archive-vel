@@ -8,6 +8,8 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
+define('MULTIPLE', 'oui');
+
 set_include_path(
     get_include_path()
     . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
@@ -21,25 +23,29 @@ $db = \Slrfw\Registry::get('db');
 
 /** Mettre script d'installation ici  **/
 
-$query = 'CREATE TABLE IF NOT EXISTS `boutique_panier` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `cle` char(32) NOT NULL,
-  `hit` timestamp NOT NULL DEFAULT "0000-00-00 00:00:00" ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;';
+$dir = opendir(pathinfo(__FILE__, PATHINFO_DIRNAME));
+$me = pathinfo(__FILE__, PATHINFO_BASENAME);
+while ($file = @readdir($dir)) {
+    if ($file == '.' || $file == '..' || $file == $me) {
+        continue;
+    }
+    if (is_dir($dir . DS . $file)) {
+        continue;
+    }
 
-$db->exec($query);
+    if (preg_match('#^exec-install#', $file) === false) {
+        continue;
+    }
 
-$query = 'CREATE TABLE IF NOT EXISTS `boutique_panier_ligne` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `id_panier` int(11) unsigned NOT NULL,
-  `id_reference` int(11) unsigned NOT NULL,
-  `quantite` int(11) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `id_commande` (`id_panier`),
-  KEY `id_reference` (`id_reference`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
+    try {
+        include $dir . DS . $file;
+        echo str_replace('exec-install', '', $file) . "\t\t\033[32m" . '[OK]' . "\033[00m\r\n";
+    } catch (\Exception $exc) {
+        echo str_replace('exec-install', '', $file) . "\t\t\033[31m" . '[KO]'
+            . "\033[00m" . $exc->getMessage() . "\r\n";
+    }
 
-$db->exec($query);
+
+}
+closedir($dir);
 
