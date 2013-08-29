@@ -71,6 +71,7 @@ $config = array(
             'show' => true,
             'filter_field' => 'text',
             'title' => 'Rubrique',
+            'filter_field_where' => 'id_api = ' . $confSql->get('global', 'idApi')
         ),
         array(
             'special' => 'buildDispo',
