@@ -16,6 +16,18 @@ set_include_path(
 require 'slrfw/init.php';
 
 \Slrfw\FrontController::init();
+\Slrfw\FrontController::setApp('projet');
+
+$path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+if (empty($path)) {
+    echo 'Veuillez paramétrer le fichier sqlVel.ini et le mettre dans projet/config/';
+    die;
+}
+$confSql = new \Slrfw\Config($path);
+unset($path);
+
+echo '<pre>' . print_r($confSql, true) . '</pre>';
+die;
 
 $db = \Slrfw\Registry::get('db');
 

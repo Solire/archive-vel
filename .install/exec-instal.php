@@ -8,18 +8,7 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-define('MULTIPLE', 'oui');
-
-set_include_path(
-    get_include_path()
-    . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
-);
-
-require 'slrfw/init.php';
-
-\Slrfw\FrontController::init();
-
-$db = \Slrfw\Registry::get('db');
+require_once pathinfo(__FILE__, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . 'exec-template.php';
 
 /** Mettre script d'installation ici  **/
 
@@ -33,8 +22,7 @@ while ($file = @readdir($dir)) {
     if (is_dir($dirPath . DS . $file)) {
         continue;
     }
-
-    if (preg_match('#^exec-install#', $file) === false) {
+    if (preg_match('/^exec-instal/', $file) == false) {
         continue;
     }
 

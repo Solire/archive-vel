@@ -8,21 +8,10 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-if (!defined('MULTIPLE')) {
-    set_include_path(
-        get_include_path()
-        . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
-    );
-
-    include 'slrfw/init.php';
-
-    \Slrfw\FrontController::init();
-
-    $db = \Slrfw\Registry::get('db');
-}
+require_once pathinfo(__FILE__, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . 'exec-template.php';
 
 /** Mettre script d'installation ici  **/
-$query = 'CREATE TABLE IF NOT EXISTS `region` (
+$query = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'region') . '` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nom` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
   `suppr` tinyint(4) NOT NULL,
@@ -33,7 +22,7 @@ $query = 'CREATE TABLE IF NOT EXISTS `region` (
 
 $db->exec($query);
 
-$query = 'CREATE TABLE IF NOT EXISTS `taxe` (
+$query = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'regionTaxe') . '` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_region` int(11) NOT NULL,
   `valeur` float NOT NULL,

@@ -8,22 +8,11 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-if (!defined('MULTIPLE')) {
-    set_include_path(
-        get_include_path()
-        . PATH_SEPARATOR . realpath(pathinfo(__FILE__, PATHINFO_DIRNAME) . '/../../')
-    );
-
-    include 'slrfw/init.php';
-
-    \Slrfw\FrontController::init();
-
-    $db = \Slrfw\Registry::get('db');
-}
+require_once pathinfo(__FILE__, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . 'exec-template.php';
 
 /** Mettre script d'installation ici  **/
 
-$query = 'CREATE TABLE IF NOT EXISTS `boutique_commande` (
+$query = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'commande') . '` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `etat` int(10) unsigned NOT NULL,
   `reference` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT "",
@@ -51,7 +40,7 @@ $query = 'CREATE TABLE IF NOT EXISTS `boutique_commande` (
 
 $db->exec($query);
 
-$query = 'CREATE TABLE IF NOT EXISTS `boutique_ligne` (
+$query = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'commandeLigne') . '` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_commande` int(11) NOT NULL,
   `id_reference` int(11) NOT NULL,
