@@ -31,3 +31,4 @@ $config = array(
 );
 
 unset($confVel);
+

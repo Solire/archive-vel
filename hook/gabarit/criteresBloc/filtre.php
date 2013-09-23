@@ -28,7 +28,7 @@ class Filtre implements \Slrfw\HookInterface
     /**
     * Chargement des filtres
     *
-    * @param \Slrfw\Hook $env
+    * @param \Slrfw\Hook $env Données d'environnement
     *
     * @return void
     */
@@ -76,7 +76,7 @@ class Filtre implements \Slrfw\HookInterface
                            . ' id_filtre = ' . $filtreId . ' ';
                     $db->exec($query);
                     $optionId = $db->lastInsertId();
-               }
+                }
 
                 $query  = 'INSERT INTO ' . $env->tableName . ' '
                         . 'SET '
@@ -98,3 +98,4 @@ class Filtre implements \Slrfw\HookInterface
         $db->query($query);
     }
 }
+

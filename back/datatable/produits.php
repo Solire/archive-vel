@@ -5,7 +5,7 @@
  * @package    Vel
  * @subpackage Back
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 namespace Vel\Back\Datatable;
@@ -17,7 +17,7 @@ namespace Vel\Back\Datatable;
  * @package    Vel
  * @subpackage Back
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 class Produits extends \Slrfw\Datatable\Datatable
 {
@@ -58,6 +58,11 @@ class Produits extends \Slrfw\Datatable\Datatable
      */
     protected $confSql;
 
+    /**
+     * Traitement préparatoire
+     *
+     * @return void
+     */
     public function start()
     {
         /** Récupération de la configuration de la base **/
@@ -75,6 +80,11 @@ class Produits extends \Slrfw\Datatable\Datatable
         parent::start();
     }
 
+    /**
+     * Autre traitement préparatoire
+     *
+     * @return void
+     */
     protected function beforeRunAction()
     {
         parent::beforeRunAction();
@@ -83,6 +93,11 @@ class Produits extends \Slrfw\Datatable\Datatable
         }
     }
 
+    /**
+     * Création de la datatable
+     *
+     * @return void
+     */
     public function datatableAction()
     {
         $fieldGabaritTypeKey = \Slrfw\Tools::multidimensional_search(

@@ -19,7 +19,7 @@ $(function() {
             {
                 id_gab_page: id_gab_page,
                 id_version: id_version,
-                disponible: checked ? 1 : 0
+                disponible: checked
             },
             function(data) {
                 if (data.status !== 'success') {

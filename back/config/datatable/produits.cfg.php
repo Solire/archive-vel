@@ -1,4 +1,12 @@
 <?php
+/**
+ * Configuration du datatable de filtre
+ *
+ * @package    Vel
+ * @subpackage Datatable
+ * @author     Adrien <aimbert@solire.fr>
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
+ */
 
 /** Récupération de la configuration de la base **/
 $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
@@ -119,7 +127,8 @@ $config['columns'][] = array(
 
 $config['columns'][] = array(
     'special' => 'buildAction',
-    'sql' => 'IF(`gab_page`.`suppr` = 1, "&#8709; Supprimé", IF(`gab_page`.`visible` = 0, "&#10005; Non visible", "&#10003; Visible"))',
+    'sql' => 'IF(`gab_page`.`suppr` = 1, "&#8709; Supprimé", '
+          . 'IF(`gab_page`.`visible` = 0, "&#10005; Non visible", "&#10003; Visible"))',
     'filter_field' => 'select',
     'show' => true,
     'title' => 'Actions',

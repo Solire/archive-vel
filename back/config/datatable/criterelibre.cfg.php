@@ -5,7 +5,7 @@
  * @package    Vel
  * @subpackage Datatable
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 $config = array(

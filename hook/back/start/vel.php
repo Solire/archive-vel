@@ -23,7 +23,7 @@ class Vel implements \Slrfw\HookInterface
     /**
     * Chargement des informations sur les commandes
     *
-    * @param \Slrfw\Hook $env
+    * @param \Slrfw\Hook $env Données d'environnement
     *
     * @return void
     */

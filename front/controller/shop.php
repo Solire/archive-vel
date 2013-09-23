@@ -5,7 +5,7 @@
  * @package    Controller
  * @subpackage Front
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  * @filesource
  */
 
@@ -19,7 +19,7 @@ use \Slrfw\Format\Number;
  * @package    Controller
  * @subpackage Front
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  * @filesource
  */
 class Shop extends \Vel\Front\Controller\Main
@@ -42,17 +42,17 @@ class Shop extends \Vel\Front\Controller\Main
      * @return void
      * @ignore
      */
-	public function start()
+    public function start()
     {
-		parent::start();
-		$this->_view->gindex = 'no';
-		$this->_view->gfollow = 'no';
+        parent::start();
+        $this->_view->gindex = 'no';
+        $this->_view->gfollow = 'no';
 
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $this->config = new \Slrfw\Config($path);
         unset($path);
 
-	}
+    }
 
     /**
      * Charge le panier de l'utilisateur
@@ -64,40 +64,6 @@ class Shop extends \Vel\Front\Controller\Main
         $panierClass = \Slrfw\FrontController::searchClass('Lib\Panier');
         $panier = new $panierClass;
         return $panier;
-    }
-
-    /**
-     * Charge les informations du prix du produit
-     */
-    public function prixAction()
-    {
-        $this->onlyAjax();
-
-        $ajoutProduit = new Formulaire('ajoutproduit.form.ini');
-        list($produit, $couleur, $taille, $qte)
-            = $ajoutProduit->run(Formulaire::FORMAT_LIST);
-
-        /* = Recherche de l'id de la référence
-          ------------------------------- */
-        $query = 'SELECT r.id, r.prix, r.taux_remise '
-               . 'FROM shop_produit_reference r '
-               . 'WHERE r.couleur = ' . $couleur . ' '
-               . ' AND r.taille = ' . $taille . ' '
-               . ' AND r.id_gab_page = ' . $produit . ' '
-               . ' AND r.stock >= 0 '
-               . ' AND visible = 1 ';
-
-        $ref = $this->_db->query($query)->fetch(PDO::FETCH_ASSOC);
-
-        if (empty($ref))
-            throw new LibException("");
-
-        $message = new Message("");
-        $price = $ref['prix'] * ( 1 - ($ref['taux_remise'] / 100));
-        $message->prix = Number::money($price);
-        $message->promotion = $ref['taux_remise'];
-        $message->prixFix = Number::money($ref['prix']);
-        $message->display();
     }
 
     /**
@@ -173,7 +139,7 @@ class Shop extends \Vel\Front\Controller\Main
         $message->nbProduits = $panier->getNombre();
         $message->port = Number::money($panier->getPort(), true, '€');
         $message->total = Number::money($panier->getPrix(), true, '€');
-        $message->addRedirect("shop/panier.html", 3);
+        $message->addRedirect('shop/panier.html', 3);
         $message->display();
     }
 
@@ -257,7 +223,7 @@ class Shop extends \Vel\Front\Controller\Main
 
         $modes = $commande->config('modePayement', 'enable');
         if (empty($modes)) {
-                throw new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante');
+            throw new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante');
         }
         $modes = explode(',', $modes);
         $modes = array_map('trim', $modes);
@@ -272,16 +238,6 @@ class Shop extends \Vel\Front\Controller\Main
         $hook->commande = $commande;
         $hook->exec('traitement');
         $hook->exec($mode);
-    }
-
-    public function paiementAccepteAction()
-    {
-
-    }
-
-    public function paiementRefuseAction()
-    {
-
     }
 }
 

@@ -23,7 +23,7 @@ class Reference implements \Slrfw\HookInterface
     /**
     * Chargement des données référence
     *
-    * @param \Slrfw\Hook $env
+    * @param \Slrfw\Hook $env Données d'environnement
     *
     * @return void
     */
@@ -67,6 +67,6 @@ class Reference implements \Slrfw\HookInterface
             }
         }
         $env->values = $values;
-     }
+    }
 }
 

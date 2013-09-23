@@ -23,7 +23,7 @@ class Region implements \Slrfw\HookInterface
     /**
     * Enregistrement des données région
     *
-    * @param \Slrfw\Hook $env
+    * @param \Slrfw\Hook $env Données d'environnement
     *
     * @return void
     */
@@ -82,3 +82,4 @@ class Region implements \Slrfw\HookInterface
         $db->query($query);
     }
 }
+

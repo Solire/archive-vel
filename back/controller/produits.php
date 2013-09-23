@@ -5,7 +5,7 @@
  * @package    Vel
  * @subpackage Back
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 namespace Vel\Back\Controller;
@@ -16,7 +16,7 @@ namespace Vel\Back\Controller;
  * @package    Vel
  * @subpackage Back
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 class Produits extends \App\Back\Controller\Main
 {
@@ -27,6 +27,11 @@ class Produits extends \App\Back\Controller\Main
      */
     protected $confsql;
 
+    /**
+     * Traitement préparatoire
+     *
+     * @return void
+     */
     public function start()
     {
         /** Récupération de la configuration de la base **/
@@ -76,7 +81,8 @@ class Produits extends \App\Back\Controller\Main
         }
 
         if (!(isset($_POST['id_gab_page']) && is_numeric($_POST['id_gab_page'])
-            && isset($_POST['disponible']) && is_numeric($_POST['disponible']))) {
+            && isset($_POST['disponible']) && is_numeric($_POST['disponible']))
+        ) {
             exit(json_encode($json));
         }
 
@@ -109,8 +115,9 @@ class Produits extends \App\Back\Controller\Main
         $configPageModule = $this->_configPageModule[101];
         $gabaritsListUser = $configPageModule['gabarits'];
         foreach ($this->_gabarits as $keyId => $gabarit) {
-            if(in_array($gabarit['id'], $gabaritsListUser))
+            if (in_array($gabarit['id'], $gabaritsListUser)) {
                 $gabarits[$keyId] = $gabarit;
+            }
         }
         unset($configPageModule);
 
@@ -139,7 +146,7 @@ class Produits extends \App\Back\Controller\Main
         foreach ($this->_gabarits as $gabarit) {
             $idsGabarit[] = $gabarit['id'];
         }
-        $aqqQuery = 'gab_page.id_gabarit IN (' . implode(",", $idsGabarit) . ')';
+        $aqqQuery = 'gab_page.id_gabarit IN (' . implode(',', $idsGabarit) . ')';
         $datatable->additionalWhereQuery($aqqQuery);
 
         $datatable->start();
@@ -171,6 +178,7 @@ class Produits extends \App\Back\Controller\Main
     {
         $this->_view->enable(false);
 
+        /** Contrôle des variables **/
         if (!isset($_POST['idGabPage']) || empty($_POST['idGabPage'])) {
             $data = array(
                 'message' => 'idGabPage vide',
@@ -227,6 +235,30 @@ class Produits extends \App\Back\Controller\Main
             $this->_db->query($query);
         }
 
+        /** Renregistrement des éléments spéciaux **/
+        $this->saveCritere($config, $idGabPage, $idBloc);
+        $this->saveRegion($config, $idGabPage, $idBloc);
+
+        $hook = new \Slrfw\Hook();
+        $hook->idGabPage = $idGabPage;
+        $hook->data = $_POST;
+
+        $hook->exec('referenceSave');
+
+        $this->sendSuccess();
+    }
+
+    /**
+     * Enregistrement des critères
+     *
+     * @param \Slrfw\Config $config    Configuration sqlVel
+     * @param int           $idGabPage Identifiant de la page
+     * @param int           $idBloc    Identifiant du bloc
+     *
+     * @return void
+     */
+    protected function saveCritere($config, $idGabPage, $idBloc)
+    {
         /** Enregistrement des critères **/
         $query = 'SELECT * '
                . 'FROM ' . $config->get('table', 'produitCritere') . ' proCrit '
@@ -239,7 +271,8 @@ class Produits extends \App\Back\Controller\Main
         $idsCritere = array();
         foreach ($criteres as $critere) {
             if (!isset($_POST['crit_' . $critere['id_critere']])
-                || empty($_POST['crit_' . $critere['id_critere']])) {
+                || empty($_POST['crit_' . $critere['id_critere']])
+            ) {
                 continue;
             }
             $idsCritere[] = $critere['id_critere'];
@@ -278,9 +311,19 @@ class Produits extends \App\Back\Controller\Main
                . 'WHERE id_critere NOT IN (' . implode(', ', $idsCritere) . ') '
                . ' AND id_bloc = ' . $idBloc . ' ';
         $this->_db->exec($query);
+    }
 
-
-
+    /**
+     * Enregistrement des régions
+     *
+     * @param \Slrfw\Config $config    Configuration sqlVel
+     * @param int           $idGabPage Identifiant de la page
+     * @param int           $idBloc    Identifiant du bloc
+     *
+     * @return void
+     */
+    protected function saveRegion($config, $idGabPage, $idBloc)
+    {
         $query = 'SELECT * '
                . 'FROM ' . $config->get('table', 'produitRegion') . ' proReg '
                . 'INNER JOIN ' . $config->get('table', 'region') . ' r '
@@ -310,7 +353,7 @@ class Produits extends \App\Back\Controller\Main
                    . 'ON DUPLICATE KEY UPDATE taxe = ' . $this->_db->quote($taxeId) . ', '
                    . '  prix_ttc = ' . $prixTTC . ', '
                    . '  prix_ht = ' . $prixHT . ', '
-                   . ' suppr = "0000-00-00 00:00:00" ';;
+                   . ' suppr = "0000-00-00 00:00:00" ';
             $this->_db->exec($query);
         }
         if (empty($idsRegion)) {
@@ -321,15 +364,6 @@ class Produits extends \App\Back\Controller\Main
                . 'WHERE id_region NOT IN (' . implode(', ', $idsRegion) . ') '
                . ' AND id_bloc = ' . $idBloc . ' ';
         $this->_db->exec($query);
-
-
-        $hook = new \Slrfw\Hook();
-        $hook->idGabPage = $idGabPage;
-        $hook->data = $_POST;
-
-        $hook->exec('referenceSave');
-
-        $this->sendSuccess();
     }
 
     /**

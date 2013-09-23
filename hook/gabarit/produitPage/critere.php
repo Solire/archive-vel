@@ -28,7 +28,7 @@ class Critere implements \Slrfw\HookInterface
     /**
     * Chargement des critères
     *
-    * @param \Slrfw\Hook $env
+    * @param \Slrfw\Hook $env Données d'environnement
     *
     * @return void
     */
@@ -43,7 +43,7 @@ class Critere implements \Slrfw\HookInterface
         $config = new \Slrfw\Config($path);
         unset($path);
 
-//        /** Récupération des options des filtres */
+        /** Récupération des options des filtres */
         $blocProduit = $page->getBlocs('criteres');
         $values = $blocProduit->getValues();
         $ids = array();
