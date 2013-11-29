@@ -19,7 +19,6 @@ namespace Vel\Lib;
  * @author     Adrien <aimbert@solire.fr>
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
-
 class Panier
 {
     /**
@@ -55,20 +54,23 @@ class Panier
     public $tableConf = null;
 
     /**
+     * Identifiant de la zone / région
      *
      * @var type
      */
     protected $idRegion = 1;
 
     /**
+     * Variable présente pour n'instancier qu'une fois la classe Panier
      *
      * @var self
+     * @ignore
      */
     private static $single = false;
 
 
     /**
-     * utiliser init() ou run() pour instancier panier
+     * Création ou récupération du panier utilisateur
      *
      * @return void
      * @uses \Slrfw\Config pour charger la configuration
@@ -247,7 +249,9 @@ class Panier
             $ref = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $exc) {
             throw new \Slrfw\Exception\Lib(
-                $this->config->get('erreur', 'ajoutRef'), 1, $exc
+                $this->config->get('erreur', 'ajoutRef'),
+                1,
+                $exc
             );
         }
         if (empty($ref)) {
@@ -513,4 +517,3 @@ class Panier
         return $cle;
     }
 }
-
