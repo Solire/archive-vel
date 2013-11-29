@@ -79,14 +79,17 @@ class Produits extends \App\Back\Controller\Main
         if (isset($_POST['id_version']) && $_POST['id_version'] > 0) {
             $idVersion = intval($_POST['id_version']);
         }
-
         if (!(isset($_POST['id_gab_page']) && is_numeric($_POST['id_gab_page'])
-            && isset($_POST['disponible']) && is_numeric($_POST['disponible']))
+            && isset($_POST['disponible']))
         ) {
             exit(json_encode($json));
         }
 
-        $dispo = (boolean) $_POST['disponible'];
+        if ($_POST['disponible'] === 'true') {
+            $dispo = 1;
+        } else {
+            $dispo = 0;
+        }
 
         $query = 'UPDATE ' . $this->confVel->get('table', 'produit') . ' SET '
                . '  disponible = ' . (int) $dispo . ' '
