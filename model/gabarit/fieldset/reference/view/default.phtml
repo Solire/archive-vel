@@ -115,6 +115,8 @@
 function majRef() {
     $.get('back/produits/displayRef.html?id_gab_page=4', {}, function(data) {
         $(data).replaceAll("div#ref");
+        $("div#modRef").modal('hide');
+        $("div.modal-backdrop").remove();
     });
 }
     $(function() {
