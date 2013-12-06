@@ -1,0 +1,8 @@
+<?php
+foreach ($this->_blocs as $bloc) {
+    if ($bloc->getGabarit()->getData('type') !== 'reference') {
+        continue;
+    }
+    echo $bloc->buildForm($this->view['metaId'], $this->getMeta('id_version'));
+}
+?>
