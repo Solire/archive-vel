@@ -404,68 +404,23 @@ class Produits extends \App\Back\Controller\Main
         $this->sendSuccess();
     }
 
+    /**
+     * Affichage de la section référence du formulaire d'édition de gabarits produits
+     *
+     * @return void
+     */
     public function displayRefAction()
     {
+        $this->_view->enable(false);
         $this->_gabaritManager->setPageClass('Model\\OnlyRef');
         $page = $this->_gabaritManager->getPage(BACK_ID_VERSION, BACK_ID_API, 4);
 
-        echo $page->getForm('back/page/save.html', 'back/page/liste.html', [], []);
-        die;
-        if (!$page || $page->getGabarit()->getEditable() == 0) {
-            $this->pageNotFound();
-        }
-
-        $this->_pages[$id_version] = $page;
-
-        $hook = new \Slrfw\Hook();
-        $hook->setSubdirName('back');
-
-        $hook->permission = null;
-        $hook->utilisateur = $this->_utilisateur;
-        $hook->visible = $page->getMeta('visible') > 0 ? 0 : 1;
-        $hook->ids = 4;
-        $hook->id_version = BACK_ID_VERSION;
-
-        $hook->exec('pagevisible');
-
-        $page->makeVisible = true;
-
-        if ($page->getGabarit()->getMake_hidden()) {
-            $page->makeHidden  = true;
-        } else {
-            $page->makeHidden  = false;
-        }
-
-        if ($hook->permission === false) {
-            if ($hook->visible > 0) {
-                $page->makeVisible = false;
-            } else {
-                $page->makeHidden  = false;
-            }
-        }
-
-        $path   = $page->getMeta('rewriting')
-                . $page->getGabarit()->getExtension();
-        foreach ($page->getParents() as $parent) {
-            $path = $parent->getMeta('rewriting') . '/' . $path;
-        }
-
-        if ($id_version == BACK_ID_VERSION) {
-            $this->_view->pagePath = $path . "?mode_previsualisation=1";
-        }
-
-        $query  = 'SELECT `old`'
-                . ' FROM `redirection`'
-                . ' WHERE `new` LIKE ' . $this->_db->quote($path);
-        $this->_redirections[$id_version] = $this->_db->query($query)
-            ->fetchAll(\PDO::FETCH_COLUMN);
-
-        $query  = 'SELECT * '
-                . 'FROM `main_element_commun_author_google` '
-                . 'WHERE `id_version` = ' . $id_version;
-        $this->_authors[$id_version] = $this->_db->query($query)
-            ->fetchAll(\PDO::FETCH_ASSOC);
-
+        echo $page->getForm(
+            'back/page/save.html',
+            'back/page/liste.html',
+            array(),
+            array()
+        );
     }
 }
 
