@@ -113,7 +113,7 @@
 
 <script type="text/javascript">
 function majRef() {
-    $.get('back/produits/displayRef.html?id_gab_page=4', {}, function(data) {
+    $.get('back/produits/displayRef.html?id_gab_page=<?php echo $this->idGabPage; ?>', {}, function(data) {
         $(data).replaceAll("div#ref");
         $("div#modRef").modal('hide');
         $("div.modal-backdrop").remove();

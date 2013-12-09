@@ -411,9 +411,20 @@ class Produits extends \App\Back\Controller\Main
      */
     public function displayRefAction()
     {
+        $config = array(
+            'idGabPage' => array(
+                'test' => 'notEmpty|isInt',
+                'obligatoire' => true,
+                'designe' => 'id_gab_page',
+            ),
+        );
+        $form = new \Slrfw\Formulaire($config);
+
+        list($idGabPage) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+
         $this->_view->enable(false);
         $this->_gabaritManager->setPageClass('Model\\OnlyRef');
-        $page = $this->_gabaritManager->getPage(BACK_ID_VERSION, BACK_ID_API, 4);
+        $page = $this->_gabaritManager->getPage(BACK_ID_VERSION, BACK_ID_API, $idGabPage);
 
         echo $page->getForm(
             'back/page/save.html',
