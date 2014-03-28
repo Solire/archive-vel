@@ -242,6 +242,7 @@ class Commande
             throw new \Slrfw\Exception\Lib($message);
         }
 
+        $foo = new \stdClass();
         $foo->label = $this->config('etat', 'label' . $codeEtat);
         $foo->couleur = $this->config('etat', 'couleur' . $codeEtat);
 
