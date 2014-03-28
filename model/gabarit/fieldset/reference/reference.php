@@ -64,7 +64,8 @@ class Reference extends \Slrfw\Model\Gabarit\FieldSet\GabaritFieldSet
                . ' ON c.id = crit.id_critere '
                . '  AND c.suppr = 0 '
                . 'WHERE crit.id_gab_page = ' . $this->idGabPage . ' '
-               . ' AND crit.suppr = 0 ';
+               . ' AND crit.suppr = 0 '
+               . 'ORDER BY crit.ordre ';
         $this->criteres = $db->query($query)->fetchAll();
 
         foreach ($this->criteres as $crit) {

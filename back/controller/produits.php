@@ -79,14 +79,17 @@ class Produits extends \App\Back\Controller\Main
         if (isset($_POST['id_version']) && $_POST['id_version'] > 0) {
             $idVersion = intval($_POST['id_version']);
         }
-
         if (!(isset($_POST['id_gab_page']) && is_numeric($_POST['id_gab_page'])
-            && isset($_POST['disponible']) && is_numeric($_POST['disponible']))
+            && isset($_POST['disponible']))
         ) {
             exit(json_encode($json));
         }
 
-        $dispo = (boolean) $_POST['disponible'];
+        if ($_POST['disponible'] === 'true') {
+            $dispo = 1;
+        } else {
+            $dispo = 0;
+        }
 
         $query = 'UPDATE ' . $this->confVel->get('table', 'produit') . ' SET '
                . '  disponible = ' . (int) $dispo . ' '
@@ -399,6 +402,36 @@ class Produits extends \App\Back\Controller\Main
         $this->_db->exec($query);
 
         $this->sendSuccess();
+    }
+
+    /**
+     * Affichage de la section référence du formulaire d'édition de gabarits produits
+     *
+     * @return void
+     */
+    public function displayRefAction()
+    {
+        $config = array(
+            'idGabPage' => array(
+                'test' => 'notEmpty|isInt',
+                'obligatoire' => true,
+                'designe' => 'id_gab_page',
+            ),
+        );
+        $form = new \Slrfw\Formulaire($config);
+
+        list($idGabPage) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+
+        $this->_view->enable(false);
+        $this->_gabaritManager->setPageClass('Model\\OnlyRef');
+        $page = $this->_gabaritManager->getPage(BACK_ID_VERSION, BACK_ID_API, $idGabPage);
+
+        echo $page->getForm(
+            'back/page/save.html',
+            'back/page/liste.html',
+            array(),
+            array()
+        );
     }
 }
 

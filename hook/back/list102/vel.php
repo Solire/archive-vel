@@ -32,7 +32,8 @@ class Vel implements \Slrfw\HookInterface
         $db = \Slrfw\Registry::get('db');
         $query = 'SELECT p.*, CONCAT (COUNT(e.id) , " sous-rubrique(s) & ", '
                . '  COUNT(e2.id), " produit(s)") aff_enfants, '
-               . '  COUNT(e.id) + COUNT(e2.id) nbre_enfants '
+               . '  COUNT(e.id) nbre_enfants, '
+               . '  COUNT(e2.id) nbrProd '
                . 'FROM gab_page p '
                . 'LEFT JOIN gab_page e '
                . ' ON e.id_parent = p.id '
@@ -63,6 +64,9 @@ class Vel implements \Slrfw\HookInterface
 
         $pages = array();
         foreach ($metas as $meta) {
+            if ($meta['nbrProd'] > 0) {
+                $meta['aff_enfants'] = $meta['nbrProd'] . ' produit(s)';
+            }
             $page = new \Slrfw\Model\GabaritPage();
             $page->setMeta($meta);
             $page->setVersion($version);

@@ -8,7 +8,7 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-namespace Vel\lib;
+namespace Vel\Lib;
 
 /**
  * Fonctionnalités de base d'un client
@@ -478,4 +478,3 @@ class Client
         return false;
     }
 }
-

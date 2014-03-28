@@ -1,13 +1,14 @@
-
-<table>
+<div id="ref">
+    <table style="width:100%;">
     <tr>
 <?php
     foreach ($this->colonnes as $col) {
 ?>
-        <th><?php echo $col['name']; ?></th>
+        <th><b><?php echo $col['name']; ?></b></th>
 <?php
     }
 ?>
+        <th><b>Action</b></th>
     </tr>
 <?php
     foreach ($this->values as $ref) {
@@ -18,7 +19,6 @@
     <tr>
 <?php
         foreach ($this->colonnes as $col) {
-
             $value = '-';
             if (isset($ref[$col['type']]) && $col['type'] !== 'data') {
                 if (isset($ref[$col['type']][$col['id']])) {
@@ -32,7 +32,7 @@
 <?php
         }
 ?>
-        <td>
+        <td style="width:160px; text-align: center">
             <a data-toggle="modal" href="#modRef" class="btn btn-small editRef" data-ref='<?php echo json_encode($ref); ?>'>Editer</a>
             <a data-titre="<?php echo $ref['code']; ?>" data-idbloc="<?php echo $ref['id']; ?>" class="btn btn-small supprRef">Supprimer</a>
         </td>
@@ -108,9 +108,17 @@
     </div>
 </div>
 
-<a class="btn btn-small btn-info addRef" style="float:right;" data-toggle="modal" href="#modRef"><i class="icon-plus"></i>Ajouter une référence</a>
+<a class="btn btn-small btn-info addRef" style="float:right; width: 155px; margin-top: 15px;" data-toggle="modal" href="#modRef"><i class="icon-plus"></i>Ajouter une référence</a>
+</div>
 
 <script type="text/javascript">
+function majRef() {
+    $.get('back/produits/displayRef.html?id_gab_page=<?php echo $this->idGabPage; ?>', {}, function(data) {
+        $(data).replaceAll("div#ref");
+        $("div#modRef").modal('hide');
+        $("div.modal-backdrop").remove();
+    });
+}
     $(function() {
 
         /* = Calcul du prix TTC en fonction du prix HT renseigné et de la taxe choisie
@@ -127,7 +135,7 @@
         };
         /* = Lors de l'ajout d'une reférence on vide les champs présents
         `------------------------------------------------- */
-        $(".addRef").click(function(){
+        $("body").delegate(".addRef", 'click', function(){
             $("#modRef input").each(function(){
                 if ($(this).attr("name") == 'idGabPage' || $(this).attr("name") == 'idBloc') {
                     return;
@@ -144,8 +152,8 @@
             calcPrices();
         });
 
-        $("a.editRef").click(function(){
-            var data = $(this).data("ref")
+        $("body").delegate("a.editRef", 'click', function(){
+            var data = $(this).data("ref"),
                 mod = $("#modRef");
 
             $("input[name=idBloc]").val(data.id);
@@ -172,9 +180,9 @@
         });
 
 
-        $(".saveRef").click(function(e){
+        $("body").delegate(".saveRef", 'click', function(e){
             e.preventDefault()
-            var data = {}
+            var data = {},
                 $this = $(this);
             $("#modRef input").each(function(){
                 data[$(this).attr("name")] = $(this).val();
@@ -192,15 +200,16 @@
                         $("body").find(".sticky-queue").html("")
 
                         if(data.status == "success") {
-                            var message = "La page a été enregistrée avec succès";
+                            var message = "La référence a été enregistrée avec succès";
                             if(data.message) {
                                 message = data.message;
                             }
+                            majRef();
                             $.sticky(message, {
                                 type:"success"
                             });
                         } else {
-                            var message = "Une erreur est survenue pendant l'enregistrement de la page";
+                            var message = "Une erreur est survenue pendant l'enregistrement de la référence";
                             if(data.message) {
                                 message = data.message;
                             }
@@ -215,14 +224,14 @@
             return false;
         });
 
-        $(".supprRef").click(function(){
+        $("body").delegate(".supprRef", 'click', function(){
             confirmSupprCrit($(this));
             return false;
         });
 
         /* = Calcul du prix TTC après un changement de taxe
         `------------------------------------------------- */
-        $("#modRef select[name^=reg_taxe_]").change(function(){
+        $("body").delegate("#modRef select[name^=reg_taxe_]", 'change', function(){
             calcPrices();
         });
 

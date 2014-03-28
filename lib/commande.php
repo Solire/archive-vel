@@ -1,6 +1,6 @@
 <?php
 /**
- * Module des comptes utilisateur
+ * Gestionnaire des commandes
  *
  * @package    Vel
  * @subpackage Library
@@ -11,7 +11,7 @@
 namespace Vel\Lib;
 
 /**
- * Module des comptes utilisateur
+ * Gestionnaire des commandes
  *
  * @package    Vel
  * @subpackage Library
@@ -46,12 +46,12 @@ class Commande
      * identifiant de la commande
      * @var int
      */
-    protected $_id = null;
+    protected $id = null;
 
     /**
      * Création d'un nouvel objet Commande
      */
-    public final function __construct()
+    final public function __construct()
     {
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $this->config = new \Slrfw\Config($path);
@@ -169,7 +169,7 @@ class Commande
      * @return void
      * @throws \Slrfw\Exception\Lib doubleInit
      */
-    public final function set($id)
+    final public function set($id)
     {
         if (!empty($this->id)) {
             throw new \Slrfw\Exception\Lib($this->config('erreur', 'doubleInit'));
@@ -417,7 +417,8 @@ class Commande
             $this->db->exec($query);
             unset($this->id);
             throw new \Slrfw\Exception\Marvin(
-                $exc, "Erreur lors de l'enregistrement d'une commande"
+                $exc,
+                "Erreur lors de l'enregistrement d'une commande"
             );
         }
 
@@ -453,7 +454,9 @@ class Commande
                    . 'WHERE r.id = ' . $value['id_reference'] . ' ';
             $idGabPage = $this->db->query($query)->fetchColumn();
             $page = $manager->getPage(
-                ID_VERSION, $this->configSql->get('global', 'idApi'), $idGabPage
+                ID_VERSION,
+                $this->configSql->get('global', 'idApi'),
+                $idGabPage
             );
 
             $this->data['lines'][$key]['reference'] = $page;
@@ -488,4 +491,3 @@ class Commande
         return $ref;
     }
 }
-

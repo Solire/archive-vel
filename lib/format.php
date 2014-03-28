@@ -96,4 +96,3 @@ class Format
         return $data;
     }
 }
-

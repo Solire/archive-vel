@@ -26,9 +26,6 @@ if (empty($path)) {
 $confSql = new \Slrfw\Config($path);
 unset($path);
 
-echo '<pre>' . print_r($confSql, true) . '</pre>';
-die;
-
 $db = \Slrfw\Registry::get('db');
 
 /** Mettre script d'installation ici  **/
