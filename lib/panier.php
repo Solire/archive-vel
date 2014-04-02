@@ -507,7 +507,7 @@ class Panier
     {
         $use = false;
         do {
-            $cle = \Slrfw\Tools::random(32);
+            $cle = \Slrfw\Format\String::random(32);
             $query = 'SELECT COUNT(*) '
                    . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
                    . 'WHERE cle = ' . $this->db->quote($cle);
