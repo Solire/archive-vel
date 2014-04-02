@@ -8,7 +8,7 @@
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-require_once pathinfo(__FILE__, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . 'exec-template.php';
+require_once pathinfo(__FILE__, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . 'exec-init.php';
 
 /** Mettre script d'installation ici  **/
 $query = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'client') . '` (
