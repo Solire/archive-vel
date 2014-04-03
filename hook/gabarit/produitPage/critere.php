@@ -44,7 +44,7 @@ class Critere implements \Slrfw\HookInterface
         unset($path);
 
         /** Récupération des options des filtres */
-        $blocProduit = $page->getBlocs('criteres');
+        $blocProduit = $page->getBlocs('critere');
         $values = $blocProduit->getValues();
         $ids = array();
         foreach ($values as $value) {

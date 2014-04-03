@@ -20,7 +20,6 @@ $db->exec($query);
 $query  = 'CREATE TABLE IF NOT EXISTS `' . $confSql->get('table', 'produit') . '` (
   `id_gab_page` int(11) NOT NULL,
   `id_version` tinyint(1) NOT NULL,
-  `description` text COLLATE utf8_unicode_ci NOT NULL,
   `prix_ht` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `disponible` tinyint(1) NOT NULL,
   `top` tinyint(4) NOT NULL,
@@ -158,15 +157,18 @@ $query  = 'INSERT INTO `gab_gabarit` (`id_parent`, `id_api`, `name`, `label`, `o
 $db->exec($query);
 $gabaritProdId = $db->lastInsertId();
 
-
+$query = 'INSERT INTO `gab_champ` (`id_parent`, `type_parent`, `id_group`, `label`, `name`, `type`, `typedonnee`, `oblig`, `trad`, `visible`, `ordre`, `typesql`, `aide`, `filter_file`) VALUES
+(' . $gabaritProdId . ', "gabarit", 0, "Prix Hors Taxes de référence", "prix_ht", "TEXT", "MIX", "oblig", 0, 1, 1, "varchar(255) NOT NULL", "", ""),
+(' . $gabaritProdId . ', "gabarit", 0, "Disponible", "disponible", "TEXT", "MIX", "fac", 1, 0, 0, "TINYINT( 1 ) NOT NULL", "", "");';
+$db->exec($query);
 
 $query = 'INSERT INTO `gab_bloc` (`id_gabarit`, `type`, `name`, `label`, `trad`, `ordre`) VALUES
-(' . $gabaritProdId . ', "' . $confSql->get('global', 'critere') . '", "criteres", "Critères", 1, 1)';
+(' . $gabaritProdId . ', "critere", "' . $confSql->get('global', 'critere') . '", "Critères", 1, 1)';
 $db->exec($query);
 $blocCritereId = $db->lastInsertId();
 
 $query = 'INSERT INTO `gab_champ` (`id_parent`, `type_parent`, `id_group`, `label`, `name`, `type`, `typedonnee`, `oblig`, `trad`, `visible`, `ordre`, `typesql`, `aide`, `filter_file`) VALUES
-(' . $blocCritereId . ', "bloc", 0, "id_critère", "id_critere", "TEXT", "MIX", "fac", 0, 1, 0, "varchar(255) NOT NULL", "", "")';
+(' . $blocCritereId . ', "bloc", 0, "Critère", "id_critere", "TEXT", "MIX", "fac", 0, 1, 0, "varchar(255) NOT NULL", "", "")';
 $db->exec($query);
 
 
@@ -190,6 +192,15 @@ $blocRubSecId = $db->lastInsertId();
 $query = 'INSERT INTO `gab_champ` (`id_parent`, `type_parent`, `id_group`, `label`, `name`, `type`, `typedonnee`, `oblig`, `trad`, `visible`, `ordre`, `typesql`, `aide`, `filter_file`) VALUES
 (' . $blocRubSecId . ', "bloc", 0, "Rubrique", "rubrique", "SELECTRUB", "NUM", "fac", 0, 1, 0, "varchar(255) NOT NULL", "", "")';
 $db->exec($query);
+$champId = $db->lastInsertId();
+$query = 'INSERT INTO `gab_champ_param_value` (`id_champ`, `code_champ_param`, `value`) VALUES
+(' . $champId . ', "WIDTH", "420"),
+(' . $champId . ', "VALUE.DEFAULT", ""),
+(' . $champId . ', "MAXLENGTH", "255"),
+(' . $champId . ', "READONLY", "false"),
+(' . $champId . ', "VIEW", "default"),
+(' . $champId . ', "RUB_ID", "11");';
+$db->exec($query);
 
 
 
@@ -200,6 +211,15 @@ $blocRegionId = $db->lastInsertId();
 
 $query = 'INSERT INTO `gab_champ` (`id_parent`, `type_parent`, `id_group`, `label`, `name`, `type`, `typedonnee`, `oblig`, `trad`, `visible`, `ordre`, `typesql`, `aide`, `filter_file`) VALUES
 (' . $blocRegionId . ', "bloc", 0, "région", "id_region", "JOIN", "MIX", "oblig", 0, 1, 0, "varchar(255) NOT NULL", "", "")';
+$db->exec($query);
+$champId = $db->lastInsertId();
+$query = 'INSERT INTO `gab_champ_param_value` (`id_champ`, `code_champ_param`, `value`) VALUES
+(' . $champId . ', "TABLE.FIELD.ID", "id"),
+(' . $champId . ', "TABLE.NAME", "region"),
+(' . $champId . ', "TABLE.FIELD.LABEL", "nom"),
+(' . $champId . ', "TYPE.GAB.PAGE", "0"),
+(' . $champId . ', "QUERY.FILTER", "suppr = 0"),
+(' . $champId . ', "VIEW", "autocomplete");';
 $db->exec($query);
 
 
@@ -235,5 +255,4 @@ $query = 'CREATE TABLE IF NOT EXISTS `catalogue_produit_reference_region` (
   PRIMARY KEY (`id_bloc`,`id_region`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 $db->exec($query);
-
 
