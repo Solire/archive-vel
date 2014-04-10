@@ -264,7 +264,7 @@ class Commande
         $cle = $this->config('etat', $name);
         if (empty ($cle)) {
             $message = $this->config('erreur', 'chercheEtat');
-            throw new ShopException($message);
+            throw new \Slrfw\Exception\Lib($message);
         }
 
         return $cle;
@@ -405,7 +405,7 @@ class Commande
 
         $query = 'INSERT INTO ' . $this->configSql->get('table', 'commandeLigne') . ' '
                . 'SELECT "", ' . $this->id . ', ' . implode(', ', $desc) . ' '
-               . 'FROM ' . $panier->config->get('table', 'panierLigne') . ' '
+               . 'FROM ' . $this->configSql->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $panier->getId();
         try {
             $this->db->exec($query);
