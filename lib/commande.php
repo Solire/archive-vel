@@ -368,7 +368,7 @@ class Commande
         $etat = $this->cherchEtat('attentPayement', $modeReg);
 
         if (empty($etat)) {
-            $message = $this->config('erreur', 'modeRegIncorecte');
+            $message = $this->config('erreur', 'modeRegIncorrect');
             throw new \Slrfw\Exception\Lib($message);
         }
 

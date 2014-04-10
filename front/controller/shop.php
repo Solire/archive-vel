@@ -51,7 +51,6 @@ class Shop extends \Vel\Front\Controller\Main
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $this->config = new \Slrfw\Config($path);
         unset($path);
-
     }
 
     /**
@@ -236,6 +235,8 @@ class Shop extends \Vel\Front\Controller\Main
 
         /** Execution du hook **/
         $hook->commande = $commande;
+        $hook->panier = $panier;
+        $hook->view = $this->_view;
         $hook->exec('traitement');
         $hook->exec($mode);
     }
