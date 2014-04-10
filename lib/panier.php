@@ -198,7 +198,6 @@ class Panier
         try {
             $this->db->exec($query);
         } catch (\PDOException $exc) {
-            echo '<pre>' . print_r($exc, true) . '</pre>';
             unset($exc);
             throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutSql'));
         }

@@ -28,13 +28,13 @@ class Shop extends \Vel\Front\Controller\Main
     /**
      * @var \Vel\Lib\Panier nom de la classe panier
      */
-    private $panier;
+    protected $panier;
 
     /**
      *
      * @var \Slrfw\Config
      */
-    private $config;
+    protected $config;
 
     /**
      * Suppression du référencement
@@ -59,7 +59,7 @@ class Shop extends \Vel\Front\Controller\Main
      *
      * @return \Vel\Lib\Panier
      */
-    private function loadPanier()
+    protected function loadPanier()
     {
         $panierClass = \Slrfw\FrontController::searchClass('Lib\Panier');
         $panier = new $panierClass;
