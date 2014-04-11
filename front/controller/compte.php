@@ -74,7 +74,7 @@ class Compte extends \Vel\Front\Controller\Main
         $client->disconnect();
 
         $url = $this->config->get('url', 'afterdeco');
-        $this->redirect($url, null);
+        $this->simpleRedirect($url, true);
     }
 
     /**
@@ -98,7 +98,7 @@ class Compte extends \Vel\Front\Controller\Main
             $message->addRedirect($form->url, 1);
             $message->display();
         } else {
-            $this->redirect('compte', null);
+            $this->simpleRedirect('compte/start.html');
         }
     }
 
@@ -195,8 +195,9 @@ class Compte extends \Vel\Front\Controller\Main
      */
     public function inscriptionAction()
     {
-        /* = Fils d'ariane
-          ------------------------------- */
+        /**
+         * Fils d'ariane
+         */
         $this->_view->breadCrumbs[] = array(
             'label' => $this->_view->_('inscription'),
             'url'   => ''
@@ -213,18 +214,24 @@ class Compte extends \Vel\Front\Controller\Main
     {
         $this->_view->enable(false);
 
-        /** Chargement du formulaire **/
+        /**
+         * Chargement du formulaire
+         */
         $formCompte = $this->chargeForm('client.form.ini');
         $infoClient = $formCompte->run();
 
-        /** Chargement de la class Client **/
+        /**
+         * Chargement de la class Client
+         */
         $className = \Slrfw\FrontController::searchClass('Lib\Client', false);
         $client = new $className();
 
-        /** Enregistrement **/
+        /**
+         * Enregistrement
+         */
         $client->enreg($infoClient);
 
-        $this->redirect('compte', null);
+        $this->simpleRedirect('compte/start.html', true);
     }
 }
 
