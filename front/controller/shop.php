@@ -93,7 +93,9 @@ class Shop extends \Vel\Front\Controller\Main
 
         $panier->ajoute($produit, $qte);
 
-        /** Chargement du nom produit **/
+        /**
+         * Chargement du nom produit
+         */
         $query = 'SELECT titre '
                . 'FROM ' . $this->config->get('table', 'reference') . ' r '
                . 'INNER JOIN gab_page gp '
@@ -154,7 +156,9 @@ class Shop extends \Vel\Front\Controller\Main
 
         $this->_seo->setTitle('Panier');
 
-        /** Si le panier est vide on envois une autre page **/
+        /**
+         * Si le panier est vide on envois une autre page
+         */
         if ($panier->getNombre() == 0) {
             $this->pageNotFound();
             return;
@@ -172,18 +176,26 @@ class Shop extends \Vel\Front\Controller\Main
             'view/shop/' . $name . '.php'
         );
 
-        /** Utilisation d'un hook **/
+        /**
+         * Utilisation d'un hook
+         */
         $hook = new \Slrfw\Hook();
         $hook->setSubdirName('panier');
 
-        /** Passage des variables utilisables **/
+        /**
+         * Passage des variables utilisables
+         */
         $hook->panier = $panier->getInfo();
         $hook->gabaritManager = $this->_gabaritManager;
 
-        /** Execution du hook **/
+        /**
+         * Execution du hook
+         */
         $hook->exec('affichage');
 
-        /** Récupération des variables **/
+        /**
+         * Récupération des variables
+         */
         $this->_view->panier = $hook->panier;
         unset($hook);
     }
@@ -198,18 +210,23 @@ class Shop extends \Vel\Front\Controller\Main
     {
         $this->_view->enable(false);
 
-        /** Utilisation d'un hook **/
+        /**
+         * Utilisation d'un hook
+         */
         $hook = new \Slrfw\Hook();
         $hook->setSubdirName('commande');
 
-        /** Chargement des données **/
+        /**
+         * Chargement des données
+         */
         $form = $this->chargeForm('passercommande.form.ini');
         list($mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
         $hook->form = $form->getArray();
         unset($form);
 
-        /* = Enregistrement de la commande
-          ------------------------------- */
+        /**
+         * Enregistrement de la commande
+         */
         $panier = $this->loadPanier();
         if ($panier->getNombre() == 0) {
             throw new \Slrfw\Exception\User('Aucun Panier en cours');
@@ -233,7 +250,9 @@ class Shop extends \Vel\Front\Controller\Main
 
         $commande->panierToCommande($mode, $panier);
 
-        /** Execution du hook **/
+        /**
+         * Execution du hook
+         */
         $hook->commande = $commande;
         $hook->panier = $panier;
         $hook->view = $this->_view;
