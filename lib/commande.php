@@ -329,6 +329,28 @@ class Commande
     }
 
     /**
+     * Définit le client d'une commande
+     * (fonction "manuelle")
+     *
+     * @param int $clientId identifiant du client
+     *
+     * @return void
+     */
+    public function setClient($clientId)
+    {
+        $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
+               . 'SET id_client = ' . $clientId . ' '
+               . 'WHERE id = ' . $this->id;
+        try {
+            $this->db->exec($query);
+        } catch (PDOException $exc) {
+            unset($exc);
+            $message = $this->config('erreur', 'setClient');
+            throw new \Slrfw\Exception\Lib($message);
+        }
+    }
+
+    /**
      * Traitement de l'edition d'état de la commande
      *
      * @param int $etat numéro de l'état dans lequel faire passer la commande
