@@ -60,7 +60,7 @@ class Client
     public function set($id)
     {
         if (!empty($this->id)) {
-            throw new \Slrfw\Exception\Lib($this->config('doubleInit', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'doubleInit'));
         }
 
         $this->id = $id;
@@ -122,9 +122,9 @@ class Client
      *
      * @return array|string
      */
-    public function config($key, $section = null)
+    public function config($section, $key = null)
     {
-        return $this->config->get($key, $section);
+        return $this->config->get($section, $key);
     }
 
 
@@ -140,7 +140,6 @@ class Client
         $query = 'DESC ' . $this->config('table', 'client') . ';';
         $archi = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
 
-
         $set = array();
         foreach ($data as $key => $value) {
             if (in_array($key, $archi)) {
@@ -152,7 +151,7 @@ class Client
         }
 
         if (empty($set)) {
-            throw new \Slrfw\Exception\Lib($this->config('insertClientNoData', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'insertClientNoData'));
             return false;
         }
 
@@ -177,12 +176,13 @@ class Client
         } catch (\PDOException $exc) {
             $mask = "#Duplicate entry '([a-z0-9@\.\-]+)' for key '(.+)'#Ui";
             if (preg_match($mask, $exc->getMessage(), $match)) {
-                $message = $this->config('insertClientSqlDuplicate', 'erreur');
+                $message = $this->config('erreur', 'insertClientSqlDuplicate');
                 $message = sprintf($message, $match[2], $match[1]);
                 throw new \Slrfw\Exception\User($message);
             } else {
-                throw new \Slrfw\Exception\Lib($this->config('insertClientSql', 'erreur'));
+                throw new \Slrfw\Exception\Lib($this->config('erreur', 'insertClientSql'));
             }
+            die;
         }
 
         $this->addAdress($data);
@@ -228,7 +228,7 @@ class Client
         $set = array();
         foreach ($data as $key => $value) {
             if (in_array($key, $archi)) {
-                if ($key == $this->config->get('table', 'colPassword')) {
+                if ($key == $this->config('table', 'colPassword')) {
                     $value = \Slrfw\Session::prepareMdp($value);
                 }
                 $set[] = '`' . $key . '` = ' . $this->db->quote($value);
@@ -236,7 +236,7 @@ class Client
         }
 
         if (empty($set)) {
-            throw new \Slrfw\Exception\Lib($this->config('updateClientNoData', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'updateClientNoData'));
             return false;
         }
 
@@ -247,7 +247,7 @@ class Client
         try {
             $this->db->exec($update);
         } catch (\PDOException $exc) {
-            throw new \Slrfw\Exception\Lib($this->config('updateClientSql', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'updateClientSql'));
         }
     }
 
@@ -305,21 +305,21 @@ class Client
         }
 
         $query = 'SELECT principal '
-               . 'FROM '. $this->config('adresse', 'table') . ' '
+               . 'FROM '. $this->config('table', 'adresse') . ' '
                . 'WHERE id = ' . $idAdresse . ' '
                . ' AND id_client = ' . $this->id;
         $main = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
         if ($main === false) {
-            throw new \Slrfw\Exception\Lib($this->config('noAdresse', 'erreur'));
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'noAdresse'));
         }
 
         /* = Blocage de la suppression des adresses principales
           ------------------------------- */
         if ((int)$main == 1 && !in_array(self::FORCE, $opt)) {
-            throw new \Slrfw\Exception\User($this->config('supprPrinc', 'erreur'));
+            throw new \Slrfw\Exception\User($this->config('erreur', 'supprPrinc'));
         }
 
-        $query = 'UPDATE ' . $this->config('adresse', 'table') . ' '
+        $query = 'UPDATE ' . $this->config('table', 'adresse') . ' '
                . 'SET id_client = 0 '
                . 'WHERE id = ' . $idAdresse . ' '
                . ' AND id_client = ' . $this->id;
@@ -338,12 +338,12 @@ class Client
      */
     public function setPrincipal($idAdresse)
     {
-        $query = 'UPDATE ' . $this->config('adresse', 'table')
+        $query = 'UPDATE ' . $this->config('table', 'adresse')
                . ' SET principal = 0 '
                . 'WHERE id_client = ' . $this->id;
         $this->db->exec($query);
 
-        $query = 'UPDATE ' . $this->config('adresse', 'table')
+        $query = 'UPDATE ' . $this->config('table', 'adresse')
                . ' SET principal = 1 '
                . 'WHERE id = ' . $idAdresse
                . ' AND id_client = ' . $this->id;
