@@ -223,7 +223,7 @@ class Client
     public function update(array $data)
     {
         $query = 'DESC ' . $this->config('table', 'client') . ';';
-        $archi = $this->db->query($query)->fetchAll(PDO::FETCH_COLUMN, 0);
+        $archi = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
 
         $set = array();
         foreach ($data as $key => $value) {

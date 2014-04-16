@@ -231,7 +231,7 @@ class Compte extends \Vel\Front\Controller\Main
          */
         $client->enreg($infoClient);
 
-        $this->simpleRedirect('compte/start.html', true);
+        $this->simpleRedirect('compte/edit.html', true);
     }
 }
 
