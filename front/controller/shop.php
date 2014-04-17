@@ -22,8 +22,11 @@ use \Slrfw\Format\Number;
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  * @filesource
  */
-class Shop extends \Vel\Front\Controller\Main
+class Shop extends \App\Front\Controller\Main
 {
+    use \Client\Lib\ClientTrait,
+        \Slrfw\Formulaire\InstanceTrait,
+        \Vel\Lib\PanierTrait;
 
     /**
      * @var \Vel\Lib\Panier nom de la classe panier
@@ -51,18 +54,6 @@ class Shop extends \Vel\Front\Controller\Main
         $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
         $this->config = new \Slrfw\Config($path);
         unset($path);
-    }
-
-    /**
-     * Charge le panier de l'utilisateur
-     *
-     * @return \Vel\Lib\Panier
-     */
-    protected function loadPanier()
-    {
-        $panierClass = \Slrfw\FrontController::searchClass('Lib\Panier');
-        $panier = new $panierClass;
-        return $panier;
     }
 
     /**
