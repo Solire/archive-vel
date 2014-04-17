@@ -46,7 +46,11 @@
                                     </li>
                                     <li class="divider-vertical divider-simple hidden-phone hidden-tablet"></li>
 <?php
-
-$this->add('menuadd-2');
-
+    try {
+        $this->add('menuadd-2');
+    } catch (\Slrfw\Exception\Lib $exc) {
+        if ($exc->getCode() != 300) {
+            throw $exc;
+        }
+    }
 ?>
