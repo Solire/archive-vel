@@ -80,19 +80,46 @@ class Commande
      *
      * @return array
      */
-    public function listeEnCours()
-    {
-        $where = array();
+
+    /**
+     * Listes les commandes payées / non livrées
+     *
+     * @param array $where   liste d'éléments à mettre dans le where (il y aura
+     * un implode(' AND ', $where) de fait)
+     * @param array $orderBy tableau des éléments sur lequel trié suivi de ASC
+     * ou DESC (il y aura un implode(', ', $orderBy) de fait)
+     * @param int   $offset  premiere index de ligne a récupérer
+     * @param int   $length  nombre de commandes à récupérer
+     *
+     * @return array
+     * @see liste()
+     */
+    public function listeEnCours(
+        array $select = null,
+        array $where = null,
+        array $orderBy = null,
+        $offset = null,
+        $length = null
+    ) {
+        if (empty($where)) {
+            $where = array();
+        }
         $where[] = $this->sqlEtat('paye') . ' OR ' . $this->sqlEtat('attentPayement');
-        $select = array('*');
+
+        if (empty($select)) {
+            $select = array('*');
+        }
+
         $liste = $this->liste($select, $where);
         foreach ($liste as &$commande) {
-            $etat = $this->infoEtat($commande['etat']);
-            $commande['couleur'] = $etat->couleur;
-            if ($commande['etat'] >= 400 && $commande['etat'] <= 499) {
-                $commande['paye'] = 'oui';
-            } else {
-                $commande['paye'] = 'non';
+            if (isset($commande['etat'])) {
+                $etat = $this->infoEtat($commande['etat']);
+                $commande['couleur'] = $etat->couleur;
+                if ($commande['etat'] >= 400 && $commande['etat'] <= 499) {
+                    $commande['paye'] = 'oui';
+                } else {
+                    $commande['paye'] = 'non';
+                }
             }
         }
         return $liste;
@@ -114,26 +141,44 @@ class Commande
     /**
      * Liste les commandes
      *
-     * @param array $select liste d'élements à mettre dans le select ( il y aura
-     * un implode(',', $select) de fait)
-     * @param array $where  liste d'éléments à mettre dans le where ( il y aura
+     * @param array $select  liste d'élements à mettre dans le select (il y
+     * aura un implode(',', $select) de fait)
+     * @param array $where   liste d'éléments à mettre dans le where (il y aura
      * un implode(' AND ', $where) de fait)
+     * @param array $orderBy tableau des éléments sur lequel trié suivi de ASC
+     * ou DESC (il y aura un implode(', ', $orderBy) de fait)
+     * @param int   $offset  premiere index de ligne a récupérer
+     * @param int   $length  nombre de commandes à récupérer
      *
      * @return array liste des commande formatés
      */
-    protected function liste(array $select = null, array $where = null)
-    {
+    protected function liste(
+        array $select = null,
+        array $where = null,
+        array $orderBy = null,
+        $offset = null,
+        $length = null
+    ) {
         if (empty($select)) {
             $select = array('*');
         }
 
         if (empty($where)) {
-            $where = array();
+            $where = array('1');
         }
 
+        if (empty($orderBy)) {
+            $orderBy = array('date DESC');
+        }
 
-        /* = Gestion des jointures de tables
-          ------------------------------- */
+        $limit = '';
+        if ($offset !== null
+            && $length !== null
+        ) {
+            $limit = ' LIMIT ' . $offset . ', ' . $length;
+        }
+
+        // Gestion des jointures de tables
         $join = array();
         foreach ($select as $value) {
             if (strpos($value, 'bc') === 0 && !isset($join['client'])) {
@@ -146,13 +191,14 @@ class Commande
         }
 
         $query = 'SELECT ' . implode(', ', $select) . ' '
-               . 'FROM ' . $this->configSql->get('table', 'commande') . ' c '
+               . ' FROM ' . $this->configSql->get('table', 'commande') . ' c '
                . ' ' . implode(' ', $join) . ' '
-               . 'WHERE ' . implode(' AND ', $where);
+               . 'WHERE ' . implode(' AND ', $where) . ' '
+               . 'ORDER BY ' . implode(', ', $orderBy) . ' '
+               . $limit;
         $commandes = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
-        /* = Présentation des Champs
-          ------------------------------- */
+        // Présentation des Champs
         $format = new \Vel\Lib\Format($this->config('presentation'));
         for ($i = 0; $i < count($commandes); $i++) {
             $commandes[$i] = $format->formatAll($commandes[$i]);
@@ -284,8 +330,7 @@ class Commande
         $nouvEtat = $this->cherchEtat('paye', $code);
         $this->editEtat($nouvEtat);
 
-        /* = Modification de la date de réglement
-          ------------------------------- */
+        // Modification de la date de réglement
         $dateReg = $this->configSql->get('table', 'dateReglement');
         if (!empty($dateReg)) {
             $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
@@ -314,8 +359,8 @@ class Commande
      * Change l'etat de la commande
      * (fonction "manuelle")
      *
-     * Il faut se reporter au fichier de configuration pour remplire correctement
-     * les champs $etape et $code
+     * Il faut se reporter au fichier de configuration pour remplire
+     * correctement les champs $etape et $code
      *
      * @param string $etape code identifiant l'étapt (expedition, payement ...)
      * @param string $code  code d'information supplémentaire cf .ini
@@ -412,8 +457,7 @@ class Commande
                . 'WHERE id = ' . $this->id;
         $this->db->exec($query);
 
-        /* = Insertion des lignes du panier dans la commande
-          `------------------------------------------------- */
+        // Insertion des lignes du panier dans la commande
         $query = 'DESC ' . $this->configSql->get('table', 'commandeLigne');
         $desc = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN);
 
@@ -469,7 +513,7 @@ class Commande
                . 'WHERE id_commande = ' . $this->id . ' ';
         $this->data['lines'] = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
-        /** Chargement des informations produit **/
+        // Chargement des informations produit
         foreach ($this->data['lines'] as $key => $value) {
             $query = 'SELECT id_gab_page '
                    . 'FROM ' . $this->configSql->get('table', 'reference') . ' r '

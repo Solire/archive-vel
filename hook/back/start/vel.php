@@ -33,8 +33,12 @@ class Vel implements \Slrfw\HookInterface
         $commande = new $commandeClass;
         unset($commandeClass);
 
+        $nbre = $commande->listeEnCours(
+            array('COUNT(DISTINCT c.id) nb', '"666" etat')
+        );
+        $nbre = $nbre[0]['nb'];
 
-        $env->ctrl->_view->countCmd = count($commande->listeEnCours());
+        $env->ctrl->_view->countCmd = $nbre;
     }
 }
 
