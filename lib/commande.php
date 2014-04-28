@@ -182,7 +182,10 @@ class Commande
         $join = array();
         foreach ($select as $value) {
             if (strpos($value, 'bc') === 0 && !isset($join['client'])) {
-                $client = new Client();
+                $clientClass = \Slrfw\FrontController::searchClass('Lib\Client');
+                $client = new $clientClass();
+                unset($clientClass);
+
                 $join['client'] = 'INNER JOIN '
                                 . $client->config('table', 'client') . ' bc '
                                 . ' ON bc.id = c.id_client ';
