@@ -2,8 +2,6 @@
 /**
  * Fonctionnalités de vente en ligne
  *
- * @package    Controller
- * @subpackage Front
  * @author     Adrien <aimbert@solire.fr>
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  * @filesource
@@ -16,8 +14,6 @@ use \Slrfw\Format\Number;
 /**
  * Fonctionnalités de vente en ligne
  *
- * @package    Controller
- * @subpackage Front
  * @author     Adrien <aimbert@solire.fr>
  * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  * @filesource
@@ -201,13 +197,13 @@ class Shop extends \App\Front\Controller\Main
     {
         $this->_view->enable(false);
 
-        /**
+        /*
          * Utilisation d'un hook
          */
         $hook = new \Slrfw\Hook();
         $hook->setSubdirName('commande');
 
-        /**
+        /*
          * Chargement des données
          */
         $form = $this->chargeForm('passercommande.form.ini');
@@ -215,7 +211,7 @@ class Shop extends \App\Front\Controller\Main
         $hook->form = $form->getArray();
         unset($form);
 
-        /**
+        /*
          * Enregistrement de la commande
          */
         $panier = $this->loadPanier();
@@ -241,7 +237,7 @@ class Shop extends \App\Front\Controller\Main
 
         $commande->panierToCommande($mode, $panier);
 
-        /**
+        /*
          * Execution du hook
          */
         $hook->commande = $commande;

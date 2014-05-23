@@ -34,13 +34,13 @@ class Commande
      * Configuration du module client
      * @var \Slrfw\Config
      */
-    private $config = null;
+    protected $config = null;
 
     /**
      * Configuration du module client
      * @var \Slrfw\Config
      */
-    private $configSql = null;
+    protected $configSql = null;
 
     /**
      * identifiant de la commande
@@ -442,6 +442,8 @@ class Commande
             throw new \Slrfw\Exception\Lib($message);
         }
 
+        $reference = $this->genereReference();
+
         $query = 'INSERT INTO ' . $this->configSql->get('table', 'commande') . ' '
                . 'SET total = ' . $panier->getTotal() . ', '
                . 'total_ht = ' . $panier->getHT() . ', '
@@ -449,18 +451,14 @@ class Commande
                . 'port = ' . $panier->getPort() . ', '
                . 'date = ' . 'NOW()' . ', '
                . 'mode_reg = ' . $this->db->quote($modeReg) . ', '
+               . 'reference = ' . $this->db->quote($reference) . ', '
                . 'etat = ' . $etat;
         $this->db->exec($query);
         $this->id = $this->db->lastInsertId();
 
-        $reference = $this->genereReference();
-
-        $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
-               . 'SET reference = ' . $this->db->quote($reference) . ' '
-               . 'WHERE id = ' . $this->id;
-        $this->db->exec($query);
-
-        // Insertion des lignes du panier dans la commande
+        /*
+         * Insertion des lignes du panier dans la commande
+         */
         $query = 'DESC ' . $this->configSql->get('table', 'commandeLigne');
         $desc = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN);
 
@@ -491,8 +489,15 @@ class Commande
             );
         }
 
-
         return $this->id;
+    }
+
+    public function getInfoSimples()
+    {
+        $query = 'SELECT * '
+               . 'FROM ' . $this->configSql->get('table', 'commande') . ' '
+               . 'WHERE id = ' . $this->id . ' ';
+        return $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -506,17 +511,16 @@ class Commande
     {
         $this->data = array();
 
-        $query = 'SELECT * '
-               . 'FROM ' . $this->configSql->get('table', 'commande') . ' '
-               . 'WHERE id = ' . $this->id . ' ';
-        $this->data = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
+        $this->data = $this->getInfoSimples();
 
         $query = 'SELECT * '
                . 'FROM ' . $this->configSql->get('table', 'commandeLigne') . ' '
                . 'WHERE id_commande = ' . $this->id . ' ';
         $this->data['lines'] = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Chargement des informations produit
+        /*
+         * Chargement des informations produit
+         */
         foreach ($this->data['lines'] as $key => $value) {
             $query = 'SELECT id_gab_page '
                    . 'FROM ' . $this->configSql->get('table', 'reference') . ' r '
@@ -544,10 +548,10 @@ class Commande
     protected function genereReference()
     {
         do {
-            $ref = '';
-            for ($i = 0; $i < 10; $i++) {
-                $ref .= (string) rand(0, 9);
-            }
+            $ref = \Slrfw\Format\String::random(
+                6,
+                \Slrfw\Format\String::RANDOM_NUMERIC
+            );
 
             $query = 'SELECT reference '
                    . 'FROM ' . $this->configSql->get('table', 'commande') . ' '
