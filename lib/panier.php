@@ -97,7 +97,7 @@ class Panier
         if (isset($_COOKIE[$cookieName])) {
             $query = 'SELECT id, id_region '
                    . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
-                   . 'WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
+                   . 'WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]);
             $panier = $this->db->query($query)->fetch();
             if (empty($panier)) {
                 $this->create();
@@ -119,8 +119,8 @@ class Panier
     {
         $cle = $this->genereCle();
         $cookieName = $this->config->get('session', 'cookieName');
-        $expire = time() +
-            (int) $this->config->get('session', 'cookieDuration');
+        $expire = time()
+                + (int) $this->config->get('session', 'cookieDuration');
 
         setcookie($cookieName, $cle, $expire, '/');
 
@@ -175,8 +175,9 @@ class Panier
                . 'AND id_reference = ' . $idRef;
         $quantite = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
         if ($quantite > 0) {
-            /* = Produit déjà présent
-              `------------------------------------------------- */
+            /*
+             * Produit déjà présent
+             */
             if (($quantite + $qte) <= 0) {
                 $this->supprime($idRef);
                 return true;
@@ -190,8 +191,9 @@ class Panier
             if ($qte < 0) {
                 throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutQte'));
             }
-            /* = On ajoute le produit dans le panier
-              `------------------------------------------------- */
+            /*
+             * On ajoute le produit dans le panier
+             */
             $query = $this->enregistreNouveauProduit($idRef, $qte);
         }
 
@@ -216,8 +218,9 @@ class Panier
     {
         $info = array();
 
-        /* = Recherche des champs à remplir directement dans la table panier
-          ------------------------------- */
+        /*
+         * Recherche des champs à remplir directement dans la table panier
+         */
         $query = 'DESC ' . $this->tableConf->get('table', 'panierLigne') . ' ';
         $archiLigne = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
 
@@ -237,8 +240,9 @@ class Panier
         unset($query, $ignoreList, $archiLigne, $archiRef, $column);
 
 
-        /* = Récupération de la référence
-          ------------------------------- */
+        /*
+         * Récupération de la référence
+         */
         $query = 'SELECT ' . implode(', ', $info) . ' '
                . 'FROM ' . $this->tableConf->get('table', 'reference') . ' '
                . 'WHERE id = ' . $idRef . ' '
@@ -257,8 +261,9 @@ class Panier
             throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutRefNo'));
         }
 
-        /* = Création des données à insérer
-          `------------------------------------------------- */
+        /*
+         * Création des données à insérer
+         */
         $data = array(
             'quantite'      => $qte,
             'id_panier'     => $this->id,
@@ -276,8 +281,9 @@ class Panier
             $data[$key] = $value;
         }
 
-        /* = Formatage de la requête
-          `------------------------------------------------- */
+        /*
+         * Formatage de la requête
+         */
         $set = array();
         foreach ($data as $key => $value) {
             $set[] = '`' . $key . '` = ' . $this->db->quote($value);
@@ -324,8 +330,9 @@ class Panier
                . ' AND id_panier = ' . $this->id;
         $this->db->exec($query);
 
-        /* = supprimer le panier si celui-ci est vide
-          `------------------------------------------------- */
+        /*
+         * Supprimer le panier si celui-ci est vide
+         */
         $query = 'SELECT COUNT(*) FROM ' . $tableLigne . ' '
                . 'WHERE id_panier = ' . $this->id;
         $count = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);

@@ -40,7 +40,7 @@ class OnlyRef extends \Slrfw\Model\GabaritPage
         $this->view['authors'] = $authors;
 
         if (count($redirections) == 0) {
-            $this->view['redirections'] = array("");
+            $this->view['redirections'] = array('');
         } else {
             $this->view['redirections'] = $redirections;
         }
