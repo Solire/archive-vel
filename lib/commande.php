@@ -202,7 +202,9 @@ class Commande
         $commandes = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
         // Présentation des Champs
-        $format = new \Vel\Lib\Format($this->config('presentation'));
+        $className = \Slrfw\FrontController::searchClass('Lib\Format', false);
+        $format = new $className($this->config('presentation'));
+
         for ($i = 0; $i < count($commandes); $i++) {
             $commandes[$i] = $format->formatAll($commandes[$i]);
         }

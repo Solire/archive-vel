@@ -22,7 +22,7 @@ class Shop extends \App\Front\Controller\Main
 {
     use \Client\Lib\ClientTrait,
         \Slrfw\Formulaire\InstanceTrait,
-        \Vel\Lib\PanierTrait;
+        \Vel\Lib\VelTrait;
 
     /**
      * @var \Vel\Lib\Panier nom de la classe panier
