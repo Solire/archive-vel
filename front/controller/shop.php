@@ -204,14 +204,6 @@ class Shop extends \App\Front\Controller\Main
         $hook->setSubdirName('commande');
 
         /*
-         * Chargement des données
-         */
-        $form = $this->chargeForm('passercommande.form.ini');
-        list($mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
-        $hook->form = $form->getArray();
-        unset($form);
-
-        /*
          * Enregistrement de la commande
          */
         $panier = $this->loadPanier();
@@ -221,8 +213,19 @@ class Shop extends \App\Front\Controller\Main
 
         $hook->exec('controle');
 
-        $className = \Slrfw\FrontController::searchClass('Lib\Commande', false);
-        $commande = new $className();
+        if (isset($hook->mode)) {
+            $mode = $hook->mode;
+        } else {
+            /*
+             * Chargement des données
+             */
+            $form = $this->chargeForm('passercommande.form.ini');
+            list($mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
+            $hook->form = $form->getArray();
+            unset($form);
+        }
+
+        $commande = $this->loadCommande();
 
         $modes = $commande->config('modePayement', 'enable');
         if (empty($modes)) {
