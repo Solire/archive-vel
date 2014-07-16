@@ -211,6 +211,7 @@ class Shop extends \App\Front\Controller\Main
             throw new \Slrfw\Exception\User('Aucun Panier en cours');
         }
 
+        $hook->panier = $panier;
         $hook->exec('controle');
 
         if (isset($hook->mode)) {
