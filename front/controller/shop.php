@@ -214,32 +214,35 @@ class Shop extends \App\Front\Controller\Main
         $hook->panier = $panier;
         $hook->exec('controle');
 
-        if (isset($hook->mode)) {
-            $mode = $hook->mode;
+        if (isset($hook->data)) {
+            $data = $hook->data;
         } else {
             /*
              * Chargement des données
              */
             $form = $this->chargeForm('passercommande.form.ini');
-            list($mode) = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
-            $hook->form = $form->getArray();
+            $data = $form->run(\Slrfw\Formulaire::FORMAT_LIST);
             unset($form);
         }
 
         $commande = $this->loadCommande();
 
-        $modes = $commande->config('modePayement', 'enable');
-        if (empty($modes)) {
-            throw new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante');
-        }
-        $modes = explode(',', $modes);
-        $modes = array_map('trim', $modes);
+        if (isset($data['mode'])) {
+            $mode  = $data['mode'];
 
-        if (!in_array($mode, $modes)) {
-            throw new \Slrfw\Exception\Lib('Mode de payement non disponible');
+            $modes = $commande->config('modePayement', 'enable');
+            if (empty($modes)) {
+                throw new \Slrfw\Exception\Lib('Pas de valeur de mode de payement correspondante');
+            }
+            $modes = explode(',', $modes);
+            $modes = array_map('trim', $modes);
+
+            if (!in_array($mode, $modes)) {
+                throw new \Slrfw\Exception\Lib('Mode de payement non disponible');
+            }
         }
 
-        $commande->panierToCommande($mode, $panier);
+        $commande->panierToCommande($data, $panier);
 
         /*
          * Execution du hook
