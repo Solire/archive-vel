@@ -27,7 +27,7 @@ class Commande
 
     /**
      * Connection à la base de données.
-     * @var \PDO
+     * @var \Slrfw\MyPDO
      */
     protected $db = null;
     /**
@@ -428,14 +428,15 @@ class Commande
      * la commande aura comme etat "attente de payement"
      * seules les informations extraites du paniers sont ajoutées
      *
-     * @param string          $modeReg Code du mode de réglement
-     * @param \Vel\Lib\Panier $panier  Panier courant
+     * @param array           $data   données supplémentaire à insérer dans la
+     * commande
+     * @param \Vel\Lib\Panier $panier Panier courant
      *
      * @return int Id de la commande
      * @throws LibException si le mode de paiement n'existe pas
      * @throws MarvinException si il y a un problème à l'enregistrement
      */
-    public function panierToCommande($modeReg, \Vel\Lib\Panier $panier)
+    public function panierToCommande($data, \Vel\Lib\Panier $panier)
     {
         $etat = $this->cherchEtat('attentPayement', $modeReg);
 
@@ -446,16 +447,20 @@ class Commande
 
         $reference = $this->genereReference();
 
-        $query = 'INSERT INTO ' . $this->configSql->get('table', 'commande') . ' '
-               . 'SET total = ' . $panier->getTotal() . ', '
-               . 'total_ht = ' . $panier->getHT() . ', '
-               . 'total_ttc = ' . $panier->getPrix() . ', '
-               . 'port = ' . $panier->getPort() . ', '
-               . 'date = ' . 'NOW()' . ', '
-               . 'mode_reg = ' . $this->db->quote($modeReg) . ', '
-               . 'reference = ' . $this->db->quote($reference) . ', '
-               . 'etat = ' . $etat;
-        $this->db->exec($query);
+        $data = array_merge(array(
+            'total'     => $panier->getTotal(),
+            'total_ht'  => $panier->getHT(),
+            'total_ttc' => $panier->getPrix(),
+            'port'      => $panier->getPort(),
+            'date'      => date('Y-m-d H:i:s'),
+            'reference' => $reference,
+            'etat'      => $etat,
+        ), $data);
+
+        /*
+         * Insertion de la commande
+         */
+        $this->db->insert($this->configSql->get('table', 'commande'), $data);
         $this->id = $this->db->lastInsertId();
 
         /*
