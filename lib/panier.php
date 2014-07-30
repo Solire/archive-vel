@@ -35,7 +35,7 @@ class Panier
 
     /**
      * Connection à la base de données.
-     * @var myPDO
+     * @var \Slrfw\MyPDO
      */
     protected $db = null;
 
