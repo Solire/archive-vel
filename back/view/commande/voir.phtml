@@ -1,0 +1,17 @@
+
+<table>
+    <thead></thead>
+    <tbody>
+<?php
+    foreach ($this->commande['lines'] as $line) {
+?>
+        <tr>
+            <td><?php echo $line['prix_ht']; ?></td>
+            <td><?php echo $line['prix_ttc']; ?></td>
+            <td><?php echo $line['prix_ttc']; ?></td>
+        </tr>
+<?php
+    }
+?>
+    </tbody>
+</table>

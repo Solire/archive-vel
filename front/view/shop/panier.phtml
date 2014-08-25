@@ -1,0 +1,36 @@
+<table>
+<?php
+foreach ($this->panier as $key => $line) {
+    if (!is_int($key)) {
+        continue;
+    }
+
+?>
+<tr>
+    <td><?php echo $line['gab']->getMeta('titre'); ?></td>
+    <td><?php echo $line['prix']; ?></td>
+    <td><?php echo $line['quantite']; ?></td>
+    <td></td>
+</tr>
+
+
+<?php
+}
+?>
+
+<tr>
+    <td>total : <?php echo $this->panier['total']; ?></td>
+    <td></td>
+</tr>
+</table>
+
+
+<form action="shop/passercommande.html" method="post">
+    <select name="methode" id="">
+        <option value="cb">CB</option>
+        <option value="cheque">Chèque</option>
+    </select>
+    <input type="text" name="livraison" />
+    <input type="submit" />
+
+</form>

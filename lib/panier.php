@@ -6,7 +6,7 @@
  * @package    Vel
  * @subpackage Library
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
 namespace Vel\Lib;
@@ -17,9 +17,8 @@ namespace Vel\Lib;
  * @package    Vel
  * @subpackage Library
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
-
 class Panier
 {
     /**
@@ -36,7 +35,7 @@ class Panier
 
     /**
      * Connection à la base de données.
-     * @var myPDO
+     * @var \Slrfw\MyPDO
      */
     protected $db = null;
 
@@ -48,20 +47,35 @@ class Panier
     public $config = null;
 
     /**
+     * Configuration de la bdd
+     *
+     * @var \Slrfw\Config
+     */
+    public $tableConf = null;
+
+    /**
+     * Identifiant de la zone / région
+     *
+     * @var type
+     */
+    protected $idRegion = 1;
+
+    /**
+     * Variable présente pour n'instancier qu'une fois la classe Panier
      *
      * @var self
+     * @ignore
      */
     private static $single = false;
 
 
     /**
-     * utiliser init() ou run() pour instancier panier
-     *
-     * @param int|null $id Identifiant du panier
+     * Création ou récupération du panier utilisateur
      *
      * @return void
      * @uses \Slrfw\Config pour charger la configuration
-     * @uses \Slrfw\Registry
+     * @uses \Slrfw\Registry récupération de la bdd
+     * @uses \Slrfw\FrontController recherche de fichiers .ini
      */
     public function __construct()
     {
@@ -72,33 +86,50 @@ class Panier
 
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $this->config = new \Slrfw\Config($path);
+        unset($path);
+
+        $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+        $this->tableConf = new \Slrfw\Config($path);
+        unset($path);
 
         $this->db = \Slrfw\Registry::get('db');
         $cookieName = $this->config->get('session', 'cookieName');
         if (isset($_COOKIE[$cookieName])) {
-            $query = 'SELECT id FROM ' . $this->config->get('table', 'panier')
-                   . ' WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]) . ';';
+            $query = 'SELECT id, id_region '
+                   . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
+                   . 'WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]);
             $panier = $this->db->query($query)->fetch();
             if (empty($panier)) {
-                setcookie($cookieName, '', time() - 3600);
+                $this->create();
                 return null;
             }
             $this->id = $panier['id'];
-
+            $this->idRegion = $panier['id_region'];
         } else {
-            $cle = $this->genereCle();
-            $cookieName = $this->config->get('session', 'cookieName');
-            $expire = time() +
-                (int) $this->config->get('session', 'cookieDuration');
-
-            setcookie($cookieName, $cle, $expire, '/');
-
-            $query = 'INSERT INTO ' . $this->config->get('table', 'panier')
-                   . ' (cle) VALUES ( ' . $this->db->quote($cle) . ' );';
-            $this->db->exec($query);
-            $this->id = $this->db->lastInsertId();
+            $this->create();
         }
     }
+
+    /**
+     * Création d'un nouveau panier
+     *
+     * @return void
+     */
+    protected function create()
+    {
+        $cle = $this->genereCle();
+        $cookieName = $this->config->get('session', 'cookieName');
+        $expire = time()
+                + (int) $this->config->get('session', 'cookieDuration');
+
+        setcookie($cookieName, $cle, $expire, '/');
+
+        $query = 'INSERT INTO ' . $this->tableConf->get('table', 'panier')
+               . ' (cle) VALUES ( ' . $this->db->quote($cle) . ' );';
+        $this->db->exec($query);
+        $this->id = $this->db->lastInsertId();
+    }
+
     /**
      * Modifie la date de dernier edition du panier
      *
@@ -106,7 +137,7 @@ class Panier
      */
     protected function hit()
     {
-        $query = 'UPDATE ' . $this->config->get('table', 'panier') . ' '
+        $query = 'UPDATE ' . $this->tableConf->get('table', 'panier') . ' '
                . 'SET hit = NOW() '
                . 'WHERE id = ' . $this->id;
         $this->db->exec($query);
@@ -134,7 +165,7 @@ class Panier
      */
     public function ajoute($idRef, $qte)
     {
-        $tableLigne = $this->config->get('table', 'panierLigne');
+        $tableLigne = $this->tableConf->get('table', 'panierLigne');
 
         $this->hit();
 
@@ -144,8 +175,9 @@ class Panier
                . 'AND id_reference = ' . $idRef;
         $quantite = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
         if ($quantite > 0) {
-            /* = Produit déjà présent
-              `------------------------------------------------- */
+            /*
+             * Produit déjà présent
+             */
             if (($quantite + $qte) <= 0) {
                 $this->supprime($idRef);
                 return true;
@@ -159,68 +191,10 @@ class Panier
             if ($qte < 0) {
                 throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutQte'));
             }
-            /* = On ajoute le produit dans le panier
-              `------------------------------------------------- */
-            $info = array();
-
-            /* = Recherche des champs à remplir directement dans la table panier
-              ------------------------------- */
-            $query = 'DESC ' . $tableLigne;
-            $archiLigne = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
-
-            $query = 'DESC ' . $this->config->get('table', 'reference');
-            $archiRef = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
-
-            $ignoreList = array('id');
-            foreach ($archiLigne as $column) {
-                if (in_array($column, $ignoreList)) {
-                    continue;
-                }
-
-                if (in_array($column, $archiRef)) {
-                    $info[] = $column;
-                }
-            }
-            unset($query, $ignoreList, $archiLigne, $archiRef, $column);
-
-
-            /* = Récupération de la référence
-              ------------------------------- */
-            $query = 'SELECT ' . implode(', ', $info) . ' '
-                   . 'FROM ' . $this->config->get('table', 'reference') . ' '
-                   . 'WHERE id_gab_page = ' . $idRef;
-            try {
-                $ref = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
-            } catch (\PDOException $exc) {
-                throw new \Slrfw\Exception\Lib(
-                    $this->config->get('erreur', 'ajoutRef'), 1, $exc
-                );
-            }
-            if (empty($ref)) {
-                throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutRefNo'));
-            }
-
-            /* = Création des données à insérer
-              `------------------------------------------------- */
-            $data = array(
-                'quantite'      => $qte,
-                'id_panier'     => $this->id,
-                'id_reference'  => $idRef,
-            );
-
-            foreach ($ref as $key => $value) {
-                $data[$key] = $value;
-            }
-
-            /* = Formatage de la requête
-              `------------------------------------------------- */
-            $set = array();
-            foreach ($data as $key => $value) {
-                $set[] = '`' . $key . '` = ' . $this->db->quote($value);
-            }
-
-            $query = 'INSERT INTO ' . $tableLigne . ' SET '
-                   . ' ' . implode(', ', $set) . ' ';
+            /*
+             * On ajoute le produit dans le panier
+             */
+            $query = $this->enregistreNouveauProduit($idRef, $qte);
         }
 
         try {
@@ -229,6 +203,114 @@ class Panier
             unset($exc);
             throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutSql'));
         }
+    }
+
+    /**
+     * Enregistrement d'un nouveau produit
+     *
+     * @param int $idRef identifiant de la référence
+     * @param int $qte   quantité du produit à ajouter
+     *
+     * @return string requête sql pour l'insertion
+     * @throws \Slrfw\Exception\Lib
+     */
+    protected function enregistreNouveauProduit($idRef, $qte)
+    {
+        $info = array();
+
+        /*
+         * Recherche des champs à remplir directement dans la table panier
+         */
+        $query = 'DESC ' . $this->tableConf->get('table', 'panierLigne') . ' ';
+        $archiLigne = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
+
+        $query = 'DESC ' . $this->tableConf->get('table', 'reference');
+        $archiRef = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN, 0);
+
+        $ignoreList = array('id');
+        foreach ($archiLigne as $column) {
+            if (in_array($column, $ignoreList)) {
+                continue;
+            }
+
+            if (in_array($column, $archiRef)) {
+                $info[] = $column;
+            }
+        }
+        unset($query, $ignoreList, $archiLigne, $archiRef, $column);
+
+
+        /*
+         * Récupération de la référence
+         */
+        $query = 'SELECT ' . implode(', ', $info) . ' '
+               . 'FROM ' . $this->tableConf->get('table', 'reference') . ' '
+               . 'WHERE id = ' . $idRef . ' '
+               . ' AND suppr = 0 '
+               . ' AND visible = 1 ';
+        try {
+            $ref = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $exc) {
+            throw new \Slrfw\Exception\Lib(
+                $this->config->get('erreur', 'ajoutRef'),
+                1,
+                $exc
+            );
+        }
+        if (empty($ref)) {
+            throw new \Slrfw\Exception\Lib($this->config->get('erreur', 'ajoutRefNo'));
+        }
+
+        /*
+         * Création des données à insérer
+         */
+        $data = array(
+            'quantite'      => $qte,
+            'id_panier'     => $this->id,
+            'id_reference'  => $idRef,
+        );
+
+        $prices = $this->chargePrix($idRef);
+
+        if (is_array($prices)) {
+            $data += $prices;
+        }
+        unset($prices);
+
+        foreach ($ref as $key => $value) {
+            $data[$key] = $value;
+        }
+
+        /*
+         * Formatage de la requête
+         */
+        $set = array();
+        foreach ($data as $key => $value) {
+            $set[] = '`' . $key . '` = ' . $this->db->quote($value);
+        }
+
+        $query = 'INSERT INTO ' . $this->tableConf->get('table', 'panierLigne') . ' SET '
+               . ' ' . implode(', ', $set) . ' ';
+
+        return $query;
+    }
+
+    /**
+     * Renvois les données de prix
+     *
+     * @param int $idRef identifiant de la référence
+     *
+     * @return array
+     */
+    protected function chargePrix($idRef)
+    {
+        $query = 'SELECT prix_ttc, prix_ht, taxe '
+               . 'FROM ' . $this->tableConf->get('table', 'referenceRegion') . ' rr '
+               . 'WHERE rr.id_bloc = ' . $idRef . ' '
+               . ' AND rr.id_region = ' . $this->idRegion . ' ';
+        $prices = $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
+
+        return $prices;
     }
 
     /**
@@ -241,21 +323,22 @@ class Panier
     public function supprime($idRef)
     {
         $this->hit();
-        $tableLigne = $this->config->get('table', 'panierLigne');
+        $tableLigne = $this->tableConf->get('table', 'panierLigne');
 
         $query = 'DELETE FROM ' . $tableLigne . ' '
                . 'WHERE id_reference = ' . $idRef
                . ' AND id_panier = ' . $this->id;
         $this->db->exec($query);
 
-        /* = supprimer le panier si celui-ci est vide
-          `------------------------------------------------- */
+        /*
+         * Supprimer le panier si celui-ci est vide
+         */
         $query = 'SELECT COUNT(*) FROM ' . $tableLigne . ' '
                . 'WHERE id_panier = ' . $this->id;
         $count = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
 
         if (!$count) {
-            $tablePanier = $this->config->get('table', 'panier');
+            $tablePanier = $this->tableConf->get('table', 'panier');
             $query = 'DELETE FROM ' . $tablePanier . ' '
                    . 'WHERE id = ' . $this->id;
             $this->db->exec($query);
@@ -282,7 +365,7 @@ class Panier
             if ($this->config->get('port', 'franco')) {
                 $prix = $this->getPrix();
                 $franco = $this->config->get('port', 'franco');
-                if ((float)$prix >= (float)$franco) {
+                if ((float) $prix >= (float)$franco) {
                     $port = 0;
                 }
             }
@@ -315,8 +398,8 @@ class Panier
     public function getHT()
     {
         $methode = $this->config->get('methode', 'prixHT');
-        $query = 'SELECT SUM((' . $methode . ') * (1 - taux_remise) * quantite) '
-               . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
+        $query = 'SELECT SUM((' . $methode . ') * quantite) '
+               . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $this->id;
         $prix = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
 
@@ -335,7 +418,7 @@ class Panier
         $methode = $this->config->get('methode', 'prixTTC');
 
         $query = 'SELECT SUM((' . $methode . ') * quantite) '
-               . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
+               . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $this->id;
 
         if (!empty($idRef)) {
@@ -359,11 +442,11 @@ class Panier
     {
         if (empty($idRef)) {
             $query = 'SELECT SUM(quantite) '
-                   . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
+                   . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
                    . 'WHERE id_panier = ' . $this->id;
         } else {
             $query = 'SELECT SUM(quantite) '
-                   . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
+                   . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
                    . 'WHERE id_panier = ' . $this->id . ' '
                    . ' AND id_reference = ' . $idRef;
         }
@@ -383,10 +466,19 @@ class Panier
      */
     public function getInfo()
     {
-        $query = 'SELECT * '
-               . 'FROM ' . $this->config->get('table', 'panierLigne') . ' '
-               . 'WHERE id_panier = ' . $this->id;
+        $query = 'SELECT pl.*, gp.titre nom '
+               . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' pl '
+               . 'INNER JOIN ' . $this->tableConf->get('table', 'reference') . ' r '
+               . ' ON r.id = pl.id_reference '
+               . 'INNER JOIN gab_page gp '
+               . ' ON gp.id = r.id_gab_page '
+               . 'WHERE pl.id_panier = ' . $this->id;
         $lignes = $this->db->query($query)->fetchAll();
+
+        for ($i = 0; $i < count($lignes); $i++) {
+            $lignes[$i]['prixTotal'] = $lignes[$i]['prix_ttc'] * $lignes[$i]['quantite'];
+        }
+
         $lignes['total'] = $this->getTotal();
         $lignes['prix'] = $this->getPrix();
         $lignes['prixHT'] = $this->getHT();
@@ -402,10 +494,10 @@ class Panier
      */
     public function vide()
     {
-        $query = 'DELETE FROM ' . $this->config->get('table', 'panierLigne') . ' '
+        $query = 'DELETE FROM ' . $this->tableConf->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $this->id;
         $this->db->exec($query);
-        $query = 'DELETE FROM ' . $this->config->get('table', 'panier') . ' '
+        $query = 'DELETE FROM ' . $this->tableConf->get('table', 'panier') . ' '
                . 'WHERE id = ' . $this->id;
         $this->db->exec($query);
 
@@ -421,9 +513,9 @@ class Panier
     {
         $use = false;
         do {
-            $cle = \Slrfw\Tools::random(32);
+            $cle = \Slrfw\Format\String::random(32);
             $query = 'SELECT COUNT(*) '
-                   . 'FROM ' . $this->config->get('table', 'panier') . ' '
+                   . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
                    . 'WHERE cle = ' . $this->db->quote($cle);
             $use = $this->db->query($query)->fetch(\PDO::FETCH_COLUMN);
         } while ($use);
@@ -431,4 +523,3 @@ class Panier
         return $cle;
     }
 }
-

@@ -1,0 +1,28 @@
+<table>
+    <tr>
+       <th>Référence</th>
+       <th>Etat</th>
+       <th>Date</th>
+       <th>Client</th>
+       <th>Prix HT</th>
+       <th>Prix TTC</th>
+       <th></th>
+    </tr>
+<?php
+    if (isset($this->list) && !empty($this->list)) {
+        foreach ($this->list as $cmd) {
+?>
+    <tr>
+        <td><?php echo $cmd['reference']; ?></td>
+        <td style="background-color:<?php echo $cmd['couleur']; ?>"><?php echo $cmd['etat']; ?></td>
+        <td><?php echo $cmd['date']; ?></td>
+        <td><a href="mailto:<?php echo $cmd['client']['email']; ?>"><?php echo $cmd['client']['adresses'][0]['civilite']; ?> <?php echo $cmd['client']['adresses'][0]['nom']; ?> <?php echo $cmd['client']['adresses'][0]['prenom']; ?></a></td>
+        <td><?php echo $cmd['total_ht']; ?></td>
+        <td><?php echo $cmd['total_ttc']; ?></td>
+        <td><a href="back/commande/voir.html?id=<?php echo $cmd['id']; ?>">Voir</a></td>
+    </tr>
+<?php
+        }
+    }
+?>
+</table>

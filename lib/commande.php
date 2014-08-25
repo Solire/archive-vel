@@ -1,25 +1,24 @@
 <?php
 /**
- * Module des comptes utilisateur
+ * Gestionnaire des commandes
  *
- * @package    Controller
- * @subpackage Front
+ * @package    Vel
+ * @subpackage Library
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
- * @filesource
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
 
-namespace Vel\Front\Controller;
+namespace Vel\Lib;
 
 /**
- * Module des comptes utilisateur
+ * Gestionnaire des commandes
  *
- * @package    Controller
- * @subpackage Front
+ * @package    Vel
+ * @subpackage Library
  * @author     Adrien <aimbert@solire.fr>
- * @license    Solire http://www.solire.fr/
+ * @license    CC by-nc http://creativecommons.org/licenses/by-nc/3.0/fr/
  */
-abstract class Commande
+class Commande
 {
     /**
      * Lien vers le fichier de configuration des commandes
@@ -28,37 +27,46 @@ abstract class Commande
 
     /**
      * Connection à la base de données.
-     * @var \PDO
+     * @var \Slrfw\MyPDO
      */
     protected $db = null;
     /**
      * Configuration du module client
-     * @var Config
+     * @var \Slrfw\Config
      */
-    private $config = null;
+    protected $config = null;
+
+    /**
+     * Configuration du module client
+     * @var \Slrfw\Config
+     */
+    protected $configSql = null;
 
     /**
      * identifiant de la commande
      * @var int
      */
-    protected $_id = null;
+    protected $id = null;
 
     /**
      * Création d'un nouvel objet Commande
      */
-    public final function __construct()
+    final public function __construct()
     {
         $path = \Slrfw\FrontController::search(self::CONFIG_PATH, false);
         $this->config = new \Slrfw\Config($path);
 
-        $this->db = Registry::get('db');
+        $path = \Slrfw\FrontController::search('config/sqlVel.ini', false);
+        $this->configSql = new \Slrfw\Config($path);
+
+        $this->db = \Slrfw\Registry::get('db');
     }
 
     /**
      * Renvois les informations de configuration de la commande
      *
-     * @param string $key     Identifiant du paramètre de configuration
-     * @param string $section Second Identifiant du paramètre de configuration
+     * @param string $section Identifiant du paramètre de configuration
+     * @param string $key     Second Identifiant du paramètre de configuration
      *
      * @return array|string
      */
@@ -68,26 +76,116 @@ abstract class Commande
     }
 
     /**
-     * Liste les commandes
-     * @param array $select
-     * @param array $where
+     * Listes les commandes payées / non livrées
+     *
      * @return array
      */
-    protected function _liste(array $select = null, array $where = null)
-    {
-        if (empty($select))
-            $select = array('*');
 
-        if (empty($where))
+    /**
+     * Listes les commandes payées / non livrées
+     *
+     * @param array $where   liste d'éléments à mettre dans le where (il y aura
+     * un implode(' AND ', $where) de fait)
+     * @param array $orderBy tableau des éléments sur lequel trié suivi de ASC
+     * ou DESC (il y aura un implode(', ', $orderBy) de fait)
+     * @param int   $offset  premiere index de ligne a récupérer
+     * @param int   $length  nombre de commandes à récupérer
+     *
+     * @return array
+     * @see liste()
+     */
+    public function listeEnCours(
+        array $select = null,
+        array $where = null,
+        array $orderBy = null,
+        $offset = null,
+        $length = null
+    ) {
+        if (empty($where)) {
             $where = array();
+        }
+        $where[] = $this->sqlEtat('paye') . ' OR ' . $this->sqlEtat('attentPayement');
 
+        if (empty($select)) {
+            $select = array('*');
+        }
 
-        /* = Gestion des jointures de tables
-          ------------------------------- */
+        $liste = $this->liste($select, $where);
+        foreach ($liste as &$commande) {
+            if (isset($commande['etat'])) {
+                $etat = $this->infoEtat($commande['etat']);
+                $commande['couleur'] = $etat->couleur;
+                if ($commande['etat'] >= 400 && $commande['etat'] <= 499) {
+                    $commande['paye'] = 'oui';
+                } else {
+                    $commande['paye'] = 'non';
+                }
+            }
+        }
+        return $liste;
+    }
+
+    /**
+     * Listes les commandes expediée
+     *
+     * @return array
+     */
+    public function listeExp()
+    {
+        $where = array();
+        $where[] = $this->sqlEtat('expedie');
+        $select = array('c.*');
+        return $this->liste($select, $where);
+    }
+
+    /**
+     * Liste les commandes
+     *
+     * @param array $select  liste d'élements à mettre dans le select (il y
+     * aura un implode(',', $select) de fait)
+     * @param array $where   liste d'éléments à mettre dans le where (il y aura
+     * un implode(' AND ', $where) de fait)
+     * @param array $orderBy tableau des éléments sur lequel trié suivi de ASC
+     * ou DESC (il y aura un implode(', ', $orderBy) de fait)
+     * @param int   $offset  premiere index de ligne a récupérer
+     * @param int   $length  nombre de commandes à récupérer
+     *
+     * @return array liste des commande formatés
+     */
+    protected function liste(
+        array $select = null,
+        array $where = null,
+        array $orderBy = null,
+        $offset = null,
+        $length = null
+    ) {
+        if (empty($select)) {
+            $select = array('*');
+        }
+
+        if (empty($where)) {
+            $where = array('1');
+        }
+
+        if (empty($orderBy)) {
+            $orderBy = array('date DESC');
+        }
+
+        $limit = '';
+        if ($offset !== null
+            && $length !== null
+        ) {
+            $limit = ' LIMIT ' . $offset . ', ' . $length;
+        }
+
+        // Gestion des jointures de tables
         $join = array();
-        foreach($select as $value) {
+        foreach ($select as $value) {
             if (strpos($value, 'bc') === 0 && !isset($join['client'])) {
-                $client = new Client();
+                $clientClass = \Slrfw\FrontController::searchClass('Lib\Client');
+                $client = new $clientClass();
+                unset($clientClass);
+
                 $join['client'] = 'INNER JOIN '
                                 . $client->config('table', 'client') . ' bc '
                                 . ' ON bc.id = c.id_client ';
@@ -96,14 +194,17 @@ abstract class Commande
         }
 
         $query = 'SELECT ' . implode(', ', $select) . ' '
-               . 'FROM ' . $this->config('table', 'commande') . ' c '
+               . ' FROM ' . $this->configSql->get('table', 'commande') . ' c '
                . ' ' . implode(' ', $join) . ' '
-               . 'WHERE ' . implode(' AND ', $where);
-        $commandes = $this->db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+               . 'WHERE ' . implode(' AND ', $where) . ' '
+               . 'ORDER BY ' . implode(', ', $orderBy) . ' '
+               . $limit;
+        $commandes = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
-        /* = Présentation des Champs
-          ------------------------------- */
-        $format = new ShopFormat($this->config('presentation'));
+        // Présentation des Champs
+        $className = \Slrfw\FrontController::searchClass('Lib\Format', false);
+        $format = new $className($this->config('presentation'));
+
         for ($i = 0; $i < count($commandes); $i++) {
             $commandes[$i] = $format->formatAll($commandes[$i]);
         }
@@ -114,13 +215,16 @@ abstract class Commande
     /**
      * Donne un identifiant à l'objet
      *
-     * @param int $id
-     * @throws Exception doubleInit
+     * @param int $id identifiant de la commande
+     *
+     * @return void
+     * @throws \Slrfw\Exception\Lib doubleInit
      */
-    public final function set($id)
+    final public function set($id)
     {
-        if (!empty($this->id))
-            throw new Exception($this->config('erreur', 'doubleInit'));
+        if (!empty($this->id)) {
+            throw new \Slrfw\Exception\Lib($this->config('erreur', 'doubleInit'));
+        }
 
         $this->id = $id;
     }
@@ -138,41 +242,45 @@ abstract class Commande
     /**
      * Génère le "where" pour capturer les etats répondant au code
      *  'paye' , 'expedie' etc...
-     * @param string $code
+     *
+     * @param string $code code de l'état à rechercher
+     *
      * @return string
-     * @throws ShopException
+     * @throws \Slrfw\Exception\Lib si aucun etat trouvé pour le code
      */
-    protected function _sqlEtat($code)
+    protected function sqlEtat($code)
     {
         $name = 'mask' . ucfirst($code);
         $mask = $this->config('etat', $name);
 
         if (empty ($mask)) {
             $message = $this->config('erreur', 'sqlEtat');
-            throw new ShopException($message);
+            throw new \Slrfw\Exception\Lib($message);
         }
 
         $min = (int) str_replace('xx', '00', $mask);
         $max = (int) str_replace('xx', '99', $mask);
 
-        return " etat BETWEEN $min AND $max ";
+        return ' etat BETWEEN ' . $min . ' AND ' . $max . ' ';
     }
 
     /**
      * Renvois le label et la couleur de l'etat
      *
      * @param int $etat Numéro de l'etat
+     *
      * @return object
-     * @throws ShopException
+     * @throws \Slrfw\Exception\Lib si l'état n'est pas trouvé dans la config
      */
-    protected function _infoEtat($etat)
+    protected function infoEtat($etat)
     {
         $etats = $this->config('etat');
         $idEtat = $etat[0] . 'xx';
         $codeEtat = null;
         foreach ($etats as $nom => $code) {
-            if (strpos($nom, 'mask') === false)
+            if (strpos($nom, 'mask') === false) {
                 continue;
+            }
 
             if ($idEtat == $code) {
                 $codeEtat = str_replace('mask', '', $nom);
@@ -182,9 +290,10 @@ abstract class Commande
 
         if (empty($codeEtat)) {
             $message = $this->config('erreur', 'sqlEtat');
-            throw new ShopException($message);
+            throw new \Slrfw\Exception\Lib($message);
         }
 
+        $foo = new \stdClass();
         $foo->label = $this->config('etat', 'label' . $codeEtat);
         $foo->couleur = $this->config('etat', 'couleur' . $codeEtat);
 
@@ -193,18 +302,20 @@ abstract class Commande
 
     /**
      * Renvois le numéro d'état d'une commande pour l'état et le $code précisé
-     * @param string $etat
-     * @param string $code
+     *
+     * @param string $etat Libélé de l'état; ex paye, AttentPayement
+     * @param string $code Code précisant le libélé (cb etc..)
+     *
      * @return int
      * @throws ShopException
      */
-    protected function _cherchEtat($etat, $code)
+    protected function cherchEtat($etat, $code)
     {
         $name = $etat . ucfirst($code);
         $cle = $this->config('etat', $name);
         if (empty ($cle)) {
             $message = $this->config('erreur', 'chercheEtat');
-            throw new ShopException($message);
+            throw new \Slrfw\Exception\Lib($message);
         }
 
         return $cle;
@@ -216,17 +327,18 @@ abstract class Commande
      * @param int $code permet de préciser l'etat de la commande (payée par
      * chèque, payée par CB, via X ou Y) voir le fichier de configuration,
      * section etat pour plus de précisions
+     *
+     * @return void
      */
     public function changePourPaye($code = '')
     {
-        $nouvEtat = $this->_cherchEtat('paye', $code);
-        $this->_changeEtat($nouvEtat);
+        $nouvEtat = $this->cherchEtat('paye', $code);
+        $this->editEtat($nouvEtat);
 
-        /* = Modification de la date de réglement
-          ------------------------------- */
-        $dateReg = $this->config('table', 'dateReglement');
+        // Modification de la date de réglement
+        $dateReg = $this->configSql->get('table', 'dateReglement');
         if (!empty($dateReg)) {
-            $query = 'UPDATE ' . $this->config('table', 'commande') . ' '
+            $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
                    . 'SET `' . $dateReg . '` = NOW() '
                    . 'WHERE id = ' . $this->id;
             $this->db->exec($query);
@@ -239,37 +351,66 @@ abstract class Commande
      * @param int $code permet de préciser l'etat de la commande (expédiée via
      * tel transporteyr ou tel autre) voir le fichier de configuration,
      * section etat pour plus de précisions
+     *
+     * @return void
      */
     public function changePourExpedie($code = '')
     {
-        $nouvEtat = $this->_cherchEtat('expedie', $code);
-        $this->_changeEtat($nouvEtat);
+        $nouvEtat = $this->cherchEtat('expedie', $code);
+        $this->editEtat($nouvEtat);
     }
 
     /**
      * Change l'etat de la commande
      * (fonction "manuelle")
      *
-     * Il faut se reporter au fichier de configuration pour remplire correctement
-     * les champs $etape et $code
-     * @param string $etape
-     * @param string $code
+     * Il faut se reporter au fichier de configuration pour remplire
+     * correctement les champs $etape et $code
+     *
+     * @param string $etape code identifiant l'étapt (expedition, payement ...)
+     * @param string $code  code d'information supplémentaire cf .ini
+     *
+     * @return void
      */
     public function changeEtat($etape, $code = '')
     {
-        $nouvEtat = $this->_cherchEtat($etape, $code);
-        $this->_changeEtat($nouvEtat);
+        $nouvEtat = $this->cherchEtat($etape, $code);
+        $this->editEtat($nouvEtat);
+    }
+
+    /**
+     * Définit le client d'une commande
+     * (fonction "manuelle")
+     *
+     * @param int $clientId identifiant du client
+     *
+     * @return void
+     */
+    public function setClient($clientId)
+    {
+        $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
+               . 'SET id_client = ' . $clientId . ' '
+               . 'WHERE id = ' . $this->id;
+        try {
+            $this->db->exec($query);
+        } catch (PDOException $exc) {
+            unset($exc);
+            $message = $this->config('erreur', 'setClient');
+            throw new \Slrfw\Exception\Lib($message);
+        }
     }
 
     /**
      * Traitement de l'edition d'état de la commande
      *
-     * @param int $etat
-     * @throws ShopException
+     * @param int $etat numéro de l'état dans lequel faire passer la commande
+     *
+     * @return void
+     * @throws \Slrfw\Exception\Lib si problèmes lors de l'édition de l'état
      */
-    protected function _changeEtat($etat)
+    protected function editEtat($etat)
     {
-        $query = 'UPDATE ' . $this->config('table', 'commande') . ' '
+        $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
                . 'SET etat = ' . $etat . ' '
                . 'WHERE id = ' . $this->id;
         try {
@@ -277,7 +418,7 @@ abstract class Commande
         } catch (PDOException $exc) {
             unset($exc);
             $message = $this->config('erreur', 'changeEtat');
-            throw new ShopException($message);
+            throw new \Slrfw\Exception\Lib($message);
         }
     }
 
@@ -287,72 +428,121 @@ abstract class Commande
      * la commande aura comme etat "attente de payement"
      * seules les informations extraites du paniers sont ajoutées
      *
-     * @param string $modeReg
-     * @param \Vel\Lib\Panier $panier
+     * @param array           $data   données supplémentaire à insérer dans la
+     * commande
+     * @param \Vel\Lib\Panier $panier Panier courant
      *
      * @return int Id de la commande
-     * @throws LibException
-     * @throws MarvinException
+     * @throws LibException si le mode de paiement n'existe pas
+     * @throws MarvinException si il y a un problème à l'enregistrement
      */
-    public function panierToCommande($modeReg, \Vel\Lib\Panier $panier)
+    public function panierToCommande($data, \Vel\Lib\Panier $panier)
     {
-        $name = 'attentPayement' . $modeReg;
-        $etat = $this->config('table', $name);
+        $etat = $this->cherchEtat('attentPayement', $modeReg);
 
         if (empty($etat)) {
-            $message = $this->config('erreur', 'modeRegIncorecte');
+            $message = $this->config('erreur', 'modeRegIncorrect');
             throw new \Slrfw\Exception\Lib($message);
         }
 
-        $query = 'INSERT INTO ' . $this->config('table', 'commande') . ' '
-               . 'SET total = ' . $panier->getTotal() . ', '
-               . 'total_ht = ' . $panier->getHT() . ', '
-               . 'total_ttc = ' . $panier->getPrix() . ', '
-               . 'port = ' . $panier->getPort() . ', '
-               . 'date = ' . 'NOW()' . ', '
-               . 'mode_reg = ' . $this->db->quote($modeReg) . ', '
-               . 'etat = ' . $etat;
-        $this->exec($query);
-        $this->id = $this->db->lastInsertId();
-
         $reference = $this->genereReference();
 
-        $query = 'UPDATE ' . $this->config('table', 'commande') . ' '
-               . 'SET reference = ' . $this->db->quote($reference) . ' '
-               . 'WHERE id = ' . $this->id;
-        $this->db->exec($query);
+        $data = array_merge(array(
+            'total'     => $panier->getTotal(),
+            'total_ht'  => $panier->getHT(),
+            'total_ttc' => $panier->getPrix(),
+            'port'      => $panier->getPort(),
+            'date'      => date('Y-m-d H:i:s'),
+            'reference' => $reference,
+            'etat'      => $etat,
+        ), $data);
 
-        /* = Insertion des lignes du panier dans la commande
-          `------------------------------------------------- */
-        $query = 'DESC ' . $this->config('table', 'commandeLigne');
+        /*
+         * Insertion de la commande
+         */
+        $this->db->insert($this->configSql->get('table', 'commande'), $data);
+        $this->id = $this->db->lastInsertId();
+
+        /*
+         * Insertion des lignes du panier dans la commande
+         */
+        $query = 'DESC ' . $this->configSql->get('table', 'commandeLigne');
         $desc = $this->db->query($query)->fetchAll(\PDO::FETCH_COLUMN);
 
         $ignore = array('id', 'id_panier', 'id_commande');
 
-        foreach ($desc as $key => $value)
-            if (in_array($value, $ignore))
+        foreach ($desc as $key => $value) {
+            if (in_array($value, $ignore)) {
                 unset($desc[$key]);
+            }
+        }
 
-        $query = 'INSERT INTO ' . $this->config('table', 'commandeLigne') . ' '
+        $query = 'INSERT INTO ' . $this->configSql->get('table', 'commandeLigne') . ' '
                . 'SELECT "", ' . $this->id . ', ' . implode(', ', $desc) . ' '
-               . 'FROM ' . $panier->config('table', 'panierLigne') . ' '
+               . 'FROM ' . $this->configSql->get('table', 'panierLigne') . ' '
                . 'WHERE id_panier = ' . $panier->getId();
         try {
             $this->db->exec($query);
         } catch (\PDOException $exc) {
             $etat = $this->config('etat', 'annuleEnregistrement');
-            $query = 'UPDATE ' . $this->config('table', 'commande') . ' '
+            $query = 'UPDATE ' . $this->configSql->get('table', 'commande') . ' '
                    . 'SET  etat = ' . $etat . ' '
                    . 'WHERE id = ' . $this->id;
             $this->db->exec($query);
             unset($this->id);
             throw new \Slrfw\Exception\Marvin(
-                $exc, "Erreur lors de l'enregistrement d'une commande"
+                $exc,
+                "Erreur lors de l'enregistrement d'une commande"
             );
         }
 
-
         return $this->id;
+    }
+
+    public function getInfoSimples()
+    {
+        $query = 'SELECT * '
+               . 'FROM ' . $this->configSql->get('table', 'commande') . ' '
+               . 'WHERE id = ' . $this->id . ' ';
+        return $this->db->query($query)->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Renvois les données complètes de la commande (hors client)
+     *
+     * @param \Slrfw\Model\gabaritManager $manager gabarit manager courant
+     *
+     * @return array tableau des données
+     */
+    public function getInfo(\Slrfw\Model\gabaritManager $manager)
+    {
+        $this->data = array();
+
+        $this->data = $this->getInfoSimples();
+
+        $query = 'SELECT * '
+               . 'FROM ' . $this->configSql->get('table', 'commandeLigne') . ' '
+               . 'WHERE id_commande = ' . $this->id . ' ';
+        $this->data['lines'] = $this->db->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+
+        /*
+         * Chargement des informations produit
+         */
+        foreach ($this->data['lines'] as $key => $value) {
+            $query = 'SELECT id_gab_page '
+                   . 'FROM ' . $this->configSql->get('table', 'reference') . ' r '
+                   . 'WHERE r.id = ' . $value['id_reference'] . ' ';
+            $idGabPage = $this->db->query($query)->fetchColumn();
+            $page = $manager->getPage(
+                ID_VERSION,
+                $this->configSql->get('global', 'idApi'),
+                $idGabPage
+            );
+
+            $this->data['lines'][$key]['reference'] = $page;
+        }
+
+        return $this->data;
     }
 
     /**
@@ -365,20 +555,19 @@ abstract class Commande
     protected function genereReference()
     {
         do {
-            $ref = '';
-            for ($i = 0; $i < 10; $i++) {
-                $ref .= (string) rand(0, 9);
-            }
+            $ref = \Slrfw\Format\String::random(
+                6,
+                \Slrfw\Format\String::RANDOM_NUMERIC
+            );
 
             $query = 'SELECT reference '
-                   . 'FROM ' . $this->config('table', 'commande') . ' '
+                   . 'FROM ' . $this->configSql->get('table', 'commande') . ' '
                    . 'WHERE reference = ' . $this->db->quote($ref) . ' ';
 
             $result = $this->db->query($query)->fetch();
 
-        } while (empty($result));
+        } while (!empty($result));
 
         return $ref;
-	}
+    }
 }
-

@@ -1,0 +1,273 @@
+<div id="ref">
+    <table style="width:100%;">
+    <tr>
+<?php
+    foreach ($this->colonnes as $col) {
+?>
+        <th><b><?php echo $col['name']; ?></b></th>
+<?php
+    }
+?>
+        <th><b>Action</b></th>
+    </tr>
+<?php
+    foreach ($this->values as $ref) {
+        if (empty($ref)) {
+            continue;
+        }
+?>
+    <tr>
+<?php
+        foreach ($this->colonnes as $col) {
+            $value = '-';
+            if (isset($ref[$col['type']]) && $col['type'] !== 'data') {
+                if (isset($ref[$col['type']][$col['id']])) {
+                    $value = $ref[$col['type']][$col['id']]['name'];
+                }
+            } elseif ($col['type'] == 'data' && isset($ref[$col['nameSql']])) {
+                $value = $ref[$col['nameSql']];
+            }
+?>
+        <th><?php echo $value ; ?></th>
+<?php
+        }
+?>
+        <td style="width:160px; text-align: center">
+            <a data-toggle="modal" href="#modRef" class="btn btn-small editRef" data-ref='<?php echo json_encode($ref); ?>'>Editer</a>
+            <a data-titre="<?php echo $ref['code']; ?>" data-idbloc="<?php echo $ref['id']; ?>" class="btn btn-small supprRef">Supprimer</a>
+        </td>
+    </tr>
+<?php } ?>
+</table>
+<div style="width: 616px;margin-left: -308px;" class="modal fade" id="modRef" tabindex="-1" role="dialog" aria-labelledby="modCrit" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Ajout / Édition de références</h3>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" name="idGabPage" value="<?php echo $this->idGabPage; ?>" />
+        <input type="hidden" name="idBloc" value="" />
+<?php
+    for ($i = 0; $i < count($this->colonnes); $i++) {
+?>
+    <fieldset>
+        <legend><?php echo $this->colonnes[$i]['name']; ?></legend>
+<?php
+        switch ($this->colonnes[$i]['type']) {
+            case 'criteres':
+                if (empty($this->colonnes[$i]['select'])) {
+?>
+        <input type="text" name="crit_<?php echo $this->colonnes[$i]['id']; ?>" />
+<?php
+                } else {
+?>
+        <select name="crit_<?php echo $this->colonnes[$i]['id']; ?>">
+<?php
+                    foreach ($this->colonnes[$i]['select'] as $opt) {
+?>
+            <option name="crit_<?php echo $this->colonnes[$i]['id']; ?>" value="<?php echo $opt['id']; ?>"><?php echo $opt['name']; ?></option>
+<?php
+                    }
+?>
+        </select>
+<?php
+                }
+                break;
+            case 'prix':
+?>
+        <div class='region'>
+        <div style="display: block;" class="line tier"><label for="reg_taxe">Taxe</label>
+            <select id="reg_taxe" name="reg_taxe_<?php echo $this->colonnes[$i]['id']; ?>">
+<?php
+                foreach ($this->colonnes[$i]['select'] as $taxe) {
+?>
+                <option value="<?php echo $taxe['valeur']; ?>"><?php echo $taxe['valeur']; ?></option>
+<?php
+                }
+?>
+            </select>
+        </div>
+        <div style="display: block;" class="line tier"><label for="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>">Prix HT</label><input id="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" name="reg_ht_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        <div style="display: block;" class="line tier"><label for="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>">Prix TTC</label><input id="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" name="reg_ttc_<?php echo $this->colonnes[$i]['id']; ?>" type="text" /></div>
+        </div>
+<?php
+                break;
+            default:
+?>
+        <input type="text" name="<?php echo $this->colonnes[$i]['id']; ?>" />
+<?php
+        }
+?>
+    </fieldset>
+<?php
+    }
+?>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary saveRef btn-small">Enregistrer la référence</button>
+    </div>
+</div>
+
+<a class="btn btn-small btn-info addRef" style="float:right; width: 155px; margin-top: 15px;" data-toggle="modal" href="#modRef"><i class="icon-plus"></i>Ajouter une référence</a>
+</div>
+
+<script type="text/javascript">
+function majRef() {
+    $.get('back/produits/displayRef.html?id_gab_page=<?php echo $this->idGabPage; ?>', {}, function(data) {
+        $(data).replaceAll("div#ref");
+        $("div#modRef").modal('hide');
+        $("div.modal-backdrop").remove();
+    });
+}
+    $(function() {
+
+        /* = Calcul du prix TTC en fonction du prix HT renseigné et de la taxe choisie
+        `------------------------------------------------- */
+        var calcPrices = function() {
+            $("#modRef div.region").each(function(){
+                var taxe = parseFloat($("select[name^=reg_taxe_]", $(this)).val()) / 100,
+                    prixHt = parseFloat($("input[name^=reg_ht_]", $(this)).val()),
+                    prixTTC = 0;
+
+                prixTTC = prixHt + taxe * prixHt;
+                $("input[name^=reg_ttc_]", $(this)).val(prixTTC.toFixed(2));
+            });
+        };
+        /* = Lors de l'ajout d'une reférence on vide les champs présents
+        `------------------------------------------------- */
+        $("body").delegate(".addRef", 'click', function(){
+            $("#modRef input").each(function(){
+                if ($(this).attr("name") == 'idGabPage' || $(this).attr("name") == 'idBloc') {
+                    return;
+                }
+                $(this).val("");
+            });
+
+            /* = Récupération du prix HT par "défaut"
+            `------------------------------------------------- */
+            var prixHt = $("input[name^=champ<?php echo $this->idPrixHt; ?>]").val();
+            if (prixHt != "") {
+                $("#modRef input[name^=reg_ht_]").val(prixHt);
+            }
+            calcPrices();
+        });
+
+        $("body").delegate("a.editRef", 'click', function(){
+            var data = $(this).data("ref"),
+                mod = $("#modRef");
+
+            $("input[name=idBloc]").val(data.id);
+            $("input[name=code]").val(data.code);
+            $("input[name=ean]").val(data.ean);
+
+            $.each(data.criteres, function(key, value){
+                if ($("select[name=crit_" + value.id_critere + "]").length == 1) {
+                    $("select[name=crit_" + value.id_critere + "]").val(value.id_critere_option);
+                } else {
+                    $("input[name=crit_" + value.id_critere + "]").val(value.name);
+                }
+            });
+
+            $.each(data.prix, function(key, value){
+                $("select[name=reg_taxe_" + value.id_region + "]").val(value.taxe);
+                $("input[name=reg_ht_" + value.id_region + "]").val(value.prix_ht);
+                $("input[name=reg_ttc_" + value.id_region + "]").val(value.prix_ttc);
+            });
+
+            $("#modRef select").each(function(){
+                data[$(this).attr("name")] = $(this).val();
+            });
+        });
+
+
+        $("body").delegate(".saveRef", 'click', function(e){
+            e.preventDefault()
+            var data = {},
+                $this = $(this);
+            $("#modRef input").each(function(){
+                data[$(this).attr("name")] = $(this).val();
+            });
+
+            $("#modRef select").each(function(){
+                data[$(this).attr("name")] = $(this).val();
+            });
+
+            $.post(
+                "back/produits/savereference.html",
+                data,
+                function(data){
+                    $this.delay(500).queue(function(){
+                        $("body").find(".sticky-queue").html("")
+
+                        if(data.status == "success") {
+                            var message = "La référence a été enregistrée avec succès";
+                            if(data.message) {
+                                message = data.message;
+                            }
+                            majRef();
+                            $.sticky(message, {
+                                type:"success"
+                            });
+                        } else {
+                            var message = "Une erreur est survenue pendant l'enregistrement de la référence";
+                            if(data.message) {
+                                message = data.message;
+                            }
+                            $.sticky(message, {
+                                type:"error"
+                            });
+                        }
+                    })
+                },
+                'json'
+            );
+            return false;
+        });
+
+        $("body").delegate(".supprRef", 'click', function(){
+            confirmSupprCrit($(this));
+            return false;
+        });
+
+        /* = Calcul du prix TTC après un changement de taxe
+        `------------------------------------------------- */
+        $("body").delegate("#modRef select[name^=reg_taxe_]", 'change', function(){
+            calcPrices();
+        });
+
+    var confirmSupprCrit = function(ref) {
+        var sort_box = ref.parent(),
+            idBloc = ref.data("idbloc"),
+            titleElemDel = ref.attr("data-titre"),
+            heading = 'Confirmation de suppression de référence "' + titleElemDel + '"',
+            question = 'Etes-vous sûr de vouloir supprimer la référance "' + titleElemDel + '" ? ',
+            cancelButtonTxt = 'Annuler',
+            okButtonTxt = 'Confirmer',
+            callback = function() {
+                $.post(
+                    'back/produits/deleteref.html',
+                    {
+                        idBloc : idBloc
+                    },
+                    function(data){
+                        if(data.status == 'success')
+                            ref.parent().parent().slideUp('fast', function(){
+                                $(this).remove();
+                                sort_box.sortable('refresh');
+                                var heading = 'Confirmation de suppression de "' + titleElemDel + '"';
+                                var message = '"' + titleElemDel + '"'
+                                    + ' a été supprimé avec succès'
+                                var closeButtonTxt = 'Fermer';
+                                myModal.message(heading, message, closeButtonTxt, 2500);
+                            })
+                    },
+                    'json'
+                    );
+                };
+
+            myModal.confirm(heading, question, cancelButtonTxt, okButtonTxt, callback);
+
+
+    }
+});
+</script>
