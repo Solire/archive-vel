@@ -77,7 +77,7 @@ class Panier
      * @uses \Slrfw\Registry récupération de la bdd
      * @uses \Slrfw\FrontController recherche de fichiers .ini
      */
-    public function __construct()
+    public function __construct($id = null)
     {
         if (self::$single !== false) {
             return;
@@ -94,7 +94,18 @@ class Panier
 
         $this->db = \Slrfw\Registry::get('db');
         $cookieName = $this->config->get('session', 'cookieName');
-        if (isset($_COOKIE[$cookieName])) {
+        if ($id !== null) {
+            $query = 'SELECT id, id_region '
+                   . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
+                   . 'WHERE id = ' . $id;
+            $panier = $this->db->query($query)->fetch();
+            if (empty($panier)) {
+                $this->create();
+                return null;
+            }
+            $this->id = $panier['id'];
+            $this->idRegion = $panier['id_region'];
+        } elseif (isset($_COOKIE[$cookieName])) {
             $query = 'SELECT id, id_region '
                    . 'FROM ' . $this->tableConf->get('table', 'panier') . ' '
                    . 'WHERE cle = ' . $this->db->quote($_COOKIE[$cookieName]);

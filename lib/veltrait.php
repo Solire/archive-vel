@@ -23,10 +23,10 @@ trait VelTrait
      *
      * @return \Vel\Lib\Panier
      */
-    protected function loadPanier()
+    protected function loadPanier($id_panier = null)
     {
         $panierClass = \Slrfw\FrontController::searchClass('Lib\Panier');
-        $panier = new $panierClass;
+        $panier = new $panierClass($id_panier);
         return $panier;
     }
 
