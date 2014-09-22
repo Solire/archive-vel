@@ -176,13 +176,15 @@ class Produits extends \Slrfw\Datatable\Datatable
             if ($data['visible'] == true) {
                 $title = 'invisible';
                 $class = 'icon-eye-open';
+                $aClass = 'btn-success';
                 $check = ' checked="checked"';
             } else {
                 $title = 'visible';
-                $class = 'icon-eye-close translucide';
+                $class = 'icon-eye-close';
+                $aClass = 'btn-default';
                 $check = '';
             }
-            $actionHtml .= '<a class="btn btn-small btn-info visible-lang" '
+            $actionHtml .= '<a class="btn btn-small ' . $aClass . ' visible-lang" '
                          . 'title="Rendre \'' . $data['titre'] . '\' '
                          . $title . ' sur le site"><input type="checkbox" value="'
                          . $data['id'] . '|' . $data['id_version']
@@ -272,13 +274,15 @@ class Produits extends \Slrfw\Datatable\Datatable
             $str = 'indisponible';
             $check = ' checked="checked"';
             $msg = 'oui';
+            $aClass = 'btn-success';
         } else {
             $str = 'disponible';
             $check = ' ';
             $msg = 'non';
+            $aClass = 'btn-warning';
         }
 
-        $actionHtml = '<a class="btn btn-small disponible" '
+        $actionHtml = '<a class="btn btn-small ' . $aClass . ' disponible" '
                     . 'title="Rendre ' . $str . '"><input type="checkbox" value="'
                     . $data['id'] . '|' . $data['id_version']
                     . '" style="display:none;" class="disponible-lang-' . $data['id']
