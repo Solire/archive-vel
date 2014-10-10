@@ -514,7 +514,7 @@ class Commande
      *
      * @return array tableau des données
      */
-    public function getInfo(\Slrfw\Model\gabaritManager $manager)
+    public function getInfo(\Slrfw\Model\gabaritManager $manager, $id_version = ID_VERSION)
     {
         $this->data = array();
 
@@ -531,10 +531,10 @@ class Commande
         foreach ($this->data['lines'] as $key => $value) {
             $query = 'SELECT id_gab_page '
                    . 'FROM ' . $this->configSql->get('table', 'reference') . ' r '
-                   . 'WHERE r.id = ' . $value['id_reference'] . ' ';
+                   . 'WHERE r.id = ' . $value['id_reference'];
             $idGabPage = $this->db->query($query)->fetchColumn();
             $page = $manager->getPage(
-                ID_VERSION,
+                $id_version,
                 $this->configSql->get('global', 'idApi'),
                 $idGabPage
             );
