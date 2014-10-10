@@ -480,9 +480,9 @@ class Panier
         $query = 'SELECT pl.*, gp.titre nom, gp.id produitId '
                . 'FROM ' . $this->tableConf->get('table', 'panierLigne') . ' pl '
                . 'INNER JOIN ' . $this->tableConf->get('table', 'reference') . ' r '
-               . ' ON r.id = pl.id_reference '
+               . ' ON r.id = pl.id_reference AND r.id_version = ' . ID_VERSION . ' '
                . 'INNER JOIN gab_page gp '
-               . ' ON gp.id = r.id_gab_page '
+               . ' ON gp.id = r.id_gab_page AND gp.id_version = ' . ID_VERSION . ' '
                . 'WHERE pl.id_panier = ' . $this->id;
         $lignes = $this->db->query($query)->fetchAll();
 
