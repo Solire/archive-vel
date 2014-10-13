@@ -70,7 +70,7 @@ class Shop extends \App\Front\Controller\Main
                 'test' => 'notEmpty|isInt',
                 'obligatoire' => true,
                 'erreur' => 'Veuillez préciser une quantité',
-                'exception' => 'LibException',
+                'exception' => '\Slrfw\Exception\Lib',
             ),
         );
         $ajoutProduit = new \Slrfw\Formulaire($archi);
