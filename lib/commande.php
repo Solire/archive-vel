@@ -438,7 +438,7 @@ class Commande
      */
     public function panierToCommande($data, \Vel\Lib\Panier $panier)
     {
-        $etat = $this->cherchEtat('attentPayement', $modeReg);
+        $etat = $this->cherchEtat('attentPayement', $data['mode']);
 
         if (empty($etat)) {
             $message = $this->config('erreur', 'modeRegIncorrect');
@@ -462,7 +462,6 @@ class Commande
          */
         $this->db->insert($this->configSql->get('table', 'commande'), $data);
         $this->id = $this->db->lastInsertId();
-
         /*
          * Insertion des lignes du panier dans la commande
          */
