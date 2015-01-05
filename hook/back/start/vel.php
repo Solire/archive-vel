@@ -34,7 +34,7 @@ class Vel implements \Slrfw\HookInterface
         unset($commandeClass);
 
         $nbre = $commande->listeEnCours(
-            array('COUNT(DISTINCT c.id) nb', '"666" etat')
+            array('COUNT(DISTINCT c.id) nb')
         );
         $nbre = $nbre[0]['nb'];
 
