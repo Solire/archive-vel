@@ -243,7 +243,7 @@ class Shop extends \App\Front\Controller\Main
         }
 
         $commande->panierToCommande($data, $panier);
-
+        $this->commande = $commande;
         /*
          * Execution du hook
          */
